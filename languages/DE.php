@@ -17,5 +17,6 @@ $module_description 	= 'dropletExtension - Integriert Droplets in die WebsiteBak
 // name of the person(s) who translated and edited this language file
 $module_translation_by = 'Ralf Hertsch (phpManufaktur)';
 
+define('drop_ext_modify_prompt',				'<div style="border:1px solid #000;padding:15px;color:#000;background-color:#ffffcc;text-align:center;"><p>Für die Funktion des Addon <b>dropletExtension</b> ist dieser Abschnitt nicht erforderlich, Sie können ihn entfernen!</p></div>');
 
 ?>

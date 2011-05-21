@@ -14,23 +14,16 @@ if (!defined('WB_PATH')) die('invalid call of '.$_SERVER['SCRIPT_NAME']);
 
 require_once(WB_PATH .'/modules/'.basename(dirname(__FILE__)).'/class.extension.php');
 
-$tables = array('dbDropletExtensionSearch');
-$error = '';
-
-foreach ($tables as $table) {
-	$delete = null;
-	$delete = new $table();
-	if ($delete->sqlTableExists()) {
-		if (!$delete->sqlDeleteTable()) {
-			$error .= sprintf('[UNINSTALL] %s', $delete->getError());
-		}
+function is_droplet_search_registered($droplet_name) {
+	$dbDropletExt = new dbDropletExtensionSearch();
+	$where = array(dbDropletExtensionSearch::field_droplet_name => $droplet_name);
+	$result = array();
+	if (!$dbDropletExt->sqlSelectRecord($where, $result)) {
+		trigger_error($dbDropletExt->getError(), E_ERROR);
+		return false;
 	}
-}
-
-// Prompt Errors
-if (!empty($error)) {
-	$admin->print_error($error);
-}
-	
+	$result = (count($result) > 0) ? true : false;
+	return $result;
+} 
 
 ?>

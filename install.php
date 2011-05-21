@@ -12,6 +12,26 @@
 // prevent this file from being accessed directly
 if (!defined('WB_PATH')) die('invalid call of '.$_SERVER['SCRIPT_NAME']);
 
-// nothing to do !!!
+require_once(WB_PATH .'/modules/'.basename(dirname(__FILE__)).'/class.extension.php');
+
+global $admin;
+
+$tables = array('dbDropletExtensionSearch');
+$error = '';
+
+foreach ($tables as $table) {
+	$create = null;
+	$create = new $table();
+	if (!$create->sqlTableExists()) {
+		if (!$create->sqlCreateTable()) {
+			$error .= sprintf('[INSTALLATION %s] %s', $table, $create->getError());
+		}
+	}
+}
+
+// Prompt Errors
+if (!empty($error)) {
+	$admin->print_error($error);
+}
 
 ?>
