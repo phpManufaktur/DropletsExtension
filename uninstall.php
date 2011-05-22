@@ -14,7 +14,7 @@ if (!defined('WB_PATH')) die('invalid call of '.$_SERVER['SCRIPT_NAME']);
 
 require_once(WB_PATH .'/modules/'.basename(dirname(__FILE__)).'/class.extension.php');
 
-$tables = array('dbDropletExtensionSearch');
+$tables = array('dbDropletExtension');
 $error = '';
 
 foreach ($tables as $table) {

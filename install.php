@@ -16,7 +16,7 @@ require_once(WB_PATH .'/modules/'.basename(dirname(__FILE__)).'/class.extension.
 
 global $admin;
 
-$tables = array('dbDropletExtensionSearch');
+$tables = array('dbDropletExtension');
 $error = '';
 
 foreach ($tables as $table) {
