@@ -18,12 +18,12 @@ require_once(WB_PATH .'/modules/'.basename(dirname(__FILE__)).'/interface.php');
 if (!class_exists('kitToolsLibrary'))   	require_once(WB_PATH.'/modules/kit_tools/class.tools.php');
 
 function droplet_extension_search($func_vars) { 
-	$dbDropletExt = new dbDropletExtension();
+	$dbDropletExt = new dbDropletsExtension();
 	$kitTools = new kitToolsLibrary();
 	$SQL = sprintf(	"SELECT * FROM %s WHERE %s='%s'", 
 									$dbDropletExt->getTableName(),
-									dbDropletExtension::field_type,
-									dbDropletExtension::type_search);
+									dbDropletsExtension::field_type,
+									dbDropletsExtension::type_search);
 	$droplets = array();
 	if (!$dbDropletExt->sqlExec($SQL, $droplets)) {
 		trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $dbDropletExt->getError()), E_USER_ERROR);
@@ -32,13 +32,13 @@ function droplet_extension_search($func_vars) {
 	extract($func_vars, EXTR_PREFIX_ALL, 'func');
 	$result = false;
 	foreach ($droplets as $droplet) {
-		if (droplet_exists($droplet[dbDropletExtension::field_droplet_name], $droplet[dbDropletExtension::field_page_id])) {
-			if (file_exists(WB_PATH.'/modules/'.$droplet[dbDropletExtension::field_module_directory].'/droplet.extension.php')) { 
-				include(WB_PATH.'/modules/'.$droplet[dbDropletExtension::field_module_directory].'/droplet.extension.php');
-				$user_func = $droplet[dbDropletExtension::field_module_directory].'_droplet_search';
+		if (droplet_exists($droplet[dbDropletsExtension::field_droplet_name], $droplet[dbDropletsExtension::field_page_id])) {
+			if (file_exists(WB_PATH.'/modules/'.$droplet[dbDropletsExtension::field_module_directory].'/droplet.extension.php')) { 
+				include(WB_PATH.'/modules/'.$droplet[dbDropletsExtension::field_module_directory].'/droplet.extension.php');
+				$user_func = $droplet[dbDropletsExtension::field_module_directory].'_droplet_search';
 				if (function_exists($user_func)) {
-					$kitTools->getUrlByPageID($droplet[dbDropletExtension::field_page_id], $page_url);
-					$search_result = call_user_func($user_func, $droplet[dbDropletExtension::field_page_id], $page_url);
+					$kitTools->getUrlByPageID($droplet[dbDropletsExtension::field_page_id], $page_url);
+					$search_result = call_user_func($user_func, $droplet[dbDropletsExtension::field_page_id], $page_url);
 					if (is_array($search_result)) { 
 						foreach ($search_result as $search) {
 							$url = isset($search['url']) ? $search['url'] : ''; 
@@ -60,7 +60,7 @@ function droplet_extension_search($func_vars) {
 			}			
 		}
 		else {
-			unregister_droplet_search($droplet[dbDropletExtension::field_droplet_name]);
+			unregister_droplet_search($droplet[dbDropletsExtension::field_droplet_name]);
 		}
 	}
 	return $result;

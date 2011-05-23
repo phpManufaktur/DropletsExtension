@@ -1,6 +1,6 @@
 <?php
 /**
- * dropletExtension
+ * dropletsExtension
  * 
  * @author Ralf Hertsch (ralf.hertsch@phpmanufaktur.de)
  * @link http://phpmanufaktur.de
@@ -14,7 +14,7 @@ if (!defined('WB_PATH')) die('invalid call of '.$_SERVER['SCRIPT_NAME']);
 
 require_once(WB_PATH .'/modules/'.basename(dirname(__FILE__)).'/class.extension.php');
 
-$tables = array('dbDropletExtension');
+$tables = array('dbDropletsExtension');
 $error = '';
 
 foreach ($tables as $table) {

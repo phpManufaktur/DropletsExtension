@@ -1,6 +1,6 @@
 <?php
 /**
- * dropletExtension
+ * dropletsExtension
  * 
  * @author Ralf Hertsch (ralf.hertsch@phpmanufaktur.de)
  * @link http://phpmanufaktur.de
@@ -16,7 +16,7 @@ require_once(WB_PATH .'/modules/'.basename(dirname(__FILE__)).'/class.extension.
 
 global $admin;
 
-$tables = array('dbDropletExtension');
+$tables = array('dbDropletsExtension');
 $error = '';
 
 foreach ($tables as $table) {

@@ -1,6 +1,6 @@
 <?php
 /**
- * dropletExtension
+ * dropletsExtension
  * 
  * @author Ralf Hertsch (ralf.hertsch@phpmanufaktur.de)
  * @link http://phpmanufaktur.de
@@ -23,17 +23,17 @@ require_once(WB_PATH .'/modules/'.basename(dirname(__FILE__)).'/class.pages.php'
  * @param INT REFRENCE $page_id - die PAGE_ID fuer die das Droplet registriert ist
  */
 function is_registered_droplet($droplet_name, $register_type, &$page_id=-1) {
-	$dbDropletExt = new dbDropletExtension();
+	$dbDropletExt = new dbDropletsExtension();
 	$droplet_name = clear_droplet_name($droplet_name);
-	$where = array(	dbDropletExtension::field_droplet_name 	=> $droplet_name,
-									dbDropletExtension::field_type 					=> $register_type);
+	$where = array(	dbDropletsExtension::field_droplet_name 	=> $droplet_name,
+									dbDropletsExtension::field_type 					=> $register_type);
 	$droplet = array();
 	if (!$dbDropletExt->sqlSelectRecord($where, $droplet)) {
 		trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $dbDropletExt->getError()), E_USER_ERROR);
 		return false;
 	}
 	$result = (count($droplet) > 0) ? true : false;
-	$page_id = ($result) ? $droplet[0][dbDropletExtension::field_page_id] :  -1;
+	$page_id = ($result) ? $droplet[0][dbDropletsExtension::field_page_id] :  -1;
 	if ($page_id > 0) {
 		// pruefen, ob eine droplet_search section existiert
 		check_droplet_search_section($page_id);	
@@ -48,7 +48,7 @@ function is_registered_droplet($droplet_name, $register_type, &$page_id=-1) {
  * @param INT REFRENCE $page_id - die PAGE_ID fuer die das Droplet registriert ist
  */
 function is_registered_droplet_search($droplet_name, &$page_id=-1) {
-	return is_registered_droplet($droplet_name, dbDropletExtension::type_search, &$page_id);
+	return is_registered_droplet($droplet_name, dbDropletsExtension::type_search, &$page_id);
 } // is_registered_droplet_search()
 
 /**
@@ -58,7 +58,7 @@ function is_registered_droplet_search($droplet_name, &$page_id=-1) {
  * @param INT REFERENCE $page_id
  */
 function is_registered_droplet_header($droplet_name, &$page_id=-1) {
-	return is_registered_droplet($droplet_name, dbDropletExtension::type_header, &$page_id);
+	return is_registered_droplet($droplet_name, dbDropletsExtension::type_header, &$page_id);
 } // is_registered_droplet_header()
 
 /**
@@ -70,18 +70,18 @@ function is_registered_droplet_header($droplet_name, &$page_id=-1) {
  */
 function register_droplet($droplet_name, $page_id, $module_directory, $register_type) {
 	// zuerst pruefen, ob eine droplet_search section existiert
-	if ($register_type == dbDropletExtension::type_search) check_droplet_search_section($page_id); 
+	if ($register_type == dbDropletsExtension::type_search) check_droplet_search_section($page_id); 
 	$droplet_name = clear_droplet_name($droplet_name);
 	if (!droplet_exists($droplet_name, $page_id)) {
 		return false;
 	}
-	$dbDropletExt = new dbDropletExtension();
+	$dbDropletExt = new dbDropletsExtension();
 	if (is_registered_droplet($droplet_name, $register_type, $old_page_id)) {
 		if ($old_page_id != $page_id) {
 			// Datensatz aktualisieren
-			$where = array(	dbDropletExtension::field_droplet_name 	=> $droplet_name,
-											dbDropletExtension::field_type					=> $register_type);
-			$data = array(dbDropletExtension::field_page_id 				=> $page_id);
+			$where = array(	dbDropletsExtension::field_droplet_name 	=> $droplet_name,
+											dbDropletsExtension::field_type					=> $register_type);
+			$data = array(dbDropletsExtension::field_page_id 				=> $page_id);
 			if (!$dbDropletExt->sqlUpdateRecord($data, $where)) {
 				trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $dbDropletExt->getError()), E_USER_ERROR);
 				return false;
@@ -95,10 +95,10 @@ function register_droplet($droplet_name, $page_id, $module_directory, $register_
 	}
 	$module_directory = clear_module_directory($module_directory);
 	$data = array(
-		dbDropletExtension::field_droplet_name 			=> $droplet_name,
-		dbDropletExtension::field_page_id						=> $page_id,
-		dbDropletExtension::field_module_directory 	=> $module_directory,
-		dbDropletExtension::field_type							=> $register_type
+		dbDropletsExtension::field_droplet_name 			=> $droplet_name,
+		dbDropletsExtension::field_page_id						=> $page_id,
+		dbDropletsExtension::field_module_directory 	=> $module_directory,
+		dbDropletsExtension::field_type							=> $register_type
 	);
 	if (!$dbDropletExt->sqlInsertRecord($data)) {
 		trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $dbDropletExt->getError()), E_USER_ERROR);
@@ -116,7 +116,7 @@ function register_droplet($droplet_name, $page_id, $module_directory, $register_
  * @return BOOL
  */
 function register_droplet_search($droplet_name, $page_id, $module_directory) {
-	return register_droplet($droplet_name, $page_id, $module_directory, dbDropletExtension::type_search);
+	return register_droplet($droplet_name, $page_id, $module_directory, dbDropletsExtension::type_search);
 } // register_droplet_search()
 
 /**
@@ -127,7 +127,7 @@ function register_droplet_search($droplet_name, $page_id, $module_directory) {
  * @param STR $module_directory
  */
 function register_droplet_header($droplet_name, $page_id, $module_directory) { 
-	return register_droplet($droplet_name, $page_id, $module_directory, dbDropletExtension::type_header);
+	return register_droplet($droplet_name, $page_id, $module_directory, dbDropletsExtension::type_header);
 } // register_droplet_header()
 
 
@@ -139,9 +139,9 @@ function register_droplet_header($droplet_name, $page_id, $module_directory) {
  */
 function unregister_droplet($droplet_name, $register_type) {
 	$droplet_name = clear_droplet_name($droplet_name);
-	$dbDropletExt = new dbDropletExtension();
-	$where = array(	dbDropletExtension::field_droplet_name 	=> $droplet_name,
-									dbDropletExtension::field_type					=> $register_type);
+	$dbDropletExt = new dbDropletsExtension();
+	$where = array(	dbDropletsExtension::field_droplet_name 	=> $droplet_name,
+									dbDropletsExtension::field_type					=> $register_type);
 	if (!$dbDropletExt->sqlDeleteRecord($where)) {
 		trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $dbDropletExt->getError()), E_USER_ERROR);
 		return false;
@@ -156,7 +156,7 @@ function unregister_droplet($droplet_name, $register_type) {
  * @return BOOL
  */
 function unregister_droplet_search($droplet_name) {
-	return unregister_droplet($droplet_name, dbDropletExtension::type_search);
+	return unregister_droplet($droplet_name, dbDropletsExtension::type_search);
 } // unregister_droplet_search()
 
 /**
@@ -166,7 +166,7 @@ function unregister_droplet_search($droplet_name) {
  * @return BOOL
  */
 function unregister_droplet_header($droplet_name) {
-	return unregister_droplet($droplet_name, dbDropletExtension::type_header);
+	return unregister_droplet($droplet_name, dbDropletsExtension::type_header);
 } // unregister_droplet_header()
 
 /**
@@ -300,12 +300,12 @@ function print_page_head() {
 	}
 	else {
 		// Droplets pruefen
-		$dbDropletExt = new dbDropletExtension();
+		$dbDropletExt = new dbDropletsExtension();
 		$SQL = sprintf( "SELECT * FROM %s WHERE %s='%s' AND %s='%s'",
 										$dbDropletExt->getTableName(),
-										dbDropletExtension::field_type,
-										dbDropletExtension::type_header,
-										dbDropletExtension::field_page_id,
+										dbDropletsExtension::field_type,
+										dbDropletsExtension::type_header,
+										dbDropletsExtension::field_page_id,
 										$page_id);
 		$droplet = array();
 		if (!$dbDropletExt->sqlExec($SQL, $droplet)) {
@@ -315,11 +315,11 @@ function print_page_head() {
 		if (count($droplet) > 0) {
 			// es ist ein Droplet angemeldet
 			$droplet = $droplet[0];
-			if (droplet_exists($droplet[dbDropletExtension::field_droplet_name], $page_id)) { 
+			if (droplet_exists($droplet[dbDropletsExtension::field_droplet_name], $page_id)) { 
 				// das Droplet existiert
-				if (file_exists(WB_PATH.'/modules/'.$droplet[dbDropletExtension::field_module_directory].'/droplet.extension.php')) { 
-					include(WB_PATH.'/modules/'.$droplet[dbDropletExtension::field_module_directory].'/droplet.extension.php');
-					$user_func = $droplet[dbDropletExtension::field_module_directory].'_droplet_header';
+				if (file_exists(WB_PATH.'/modules/'.$droplet[dbDropletsExtension::field_module_directory].'/droplet.extension.php')) { 
+					include(WB_PATH.'/modules/'.$droplet[dbDropletsExtension::field_module_directory].'/droplet.extension.php');
+					$user_func = $droplet[dbDropletsExtension::field_module_directory].'_droplet_header';
 					if (function_exists($user_func)) { 
 						$header = call_user_func($user_func, $page_id);
 						if (is_array($header)) {
@@ -332,7 +332,7 @@ function print_page_head() {
 			}
 			else {
 				// das Droplet existiert nicht...
-				unregister_droplet_header($droplet[dbDropletExtension::field_droplet_name]);
+				unregister_droplet_header($droplet[dbDropletsExtension::field_droplet_name]);
 			}
 		}
 	}
