@@ -234,7 +234,7 @@ function check_droplet_search_section($page_id=-1) {
 	$SQL = sprintf( "SELECT * FROM %s WHERE %s='%s'",
 									$dbSections->getTableName(),
 									db_wb_sections::field_module,
-									'droplet_extension');
+									'droplets_extension');
 	$result = array();
 	if (!$dbSections->sqlExec($SQL, $result)) {
 		trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $dbSections->getError()), E_USER_ERROR);
@@ -258,7 +258,7 @@ function check_droplet_search_section($page_id=-1) {
 		db_wb_sections::field_block				=> 1,
 		db_wb_sections::field_publ_end		=> 0,
 		db_wb_sections::field_publ_start	=> 0,
-		db_wb_sections::field_module			=> 'droplet_extension',
+		db_wb_sections::field_module			=> 'droplets_extension',
 		db_wb_sections::field_page_id			=> $page_id,
 		db_wb_sections::field_position		=> $x+1
 	);
