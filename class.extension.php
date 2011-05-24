@@ -24,6 +24,7 @@ class dbDropletsExtension extends dbConnectLE {
 	const field_css_file					= 'drop_css_file';						
 	const field_timestamp					= 'drop_timestamp';
 	
+	const type_css								= 'css';
 	const type_search							= 'search';
 	const type_header							= 'header';
 	const type_undefined					= 'undefined';

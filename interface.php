@@ -62,13 +62,23 @@ function is_registered_droplet_header($droplet_name, &$page_id=-1) {
 } // is_registered_droplet_header()
 
 /**
+ * Ueberpruefr ob fuer das angegebene Droplet CSS laden registriert ist
+ * 
+ * @param unknown_type $droplet_name
+ * @param unknown_type $page_id
+ */
+function is_registered_droplet_css($droplet_name, &$page_id=-1) {
+	return is_registered_droplet($droplet_name, dbDropletsExtension::type_css, $page_id);
+} // is_registered_droplet_css()
+
+/**
  * Registriert das angegebene Droplet
  * 
  * @param STR $droplet_name - Name des Droplets
  * @param INT $page_id - PAGE_ID der Seite auf der das Droplet verwendet wird
  * @param STR $module_directory - Modul Verzeichnis in dem die Suche die Datei droplet.extension.php findet
  */
-function register_droplet($droplet_name, $page_id, $module_directory, $register_type) {
+function register_droplet($droplet_name, $page_id, $module_directory, $register_type, $css_file='') {
 	// zuerst pruefen, ob eine droplet_search section existiert
 	if ($register_type == dbDropletsExtension::type_search) check_droplet_search_section($page_id); 
 	$droplet_name = clear_droplet_name($droplet_name);
@@ -80,8 +90,9 @@ function register_droplet($droplet_name, $page_id, $module_directory, $register_
 		if ($old_page_id != $page_id) {
 			// Datensatz aktualisieren
 			$where = array(	dbDropletsExtension::field_droplet_name 	=> $droplet_name,
-											dbDropletsExtension::field_type					=> $register_type);
-			$data = array(dbDropletsExtension::field_page_id 				=> $page_id);
+											dbDropletsExtension::field_type						=> $register_type);
+			$data = array(	dbDropletsExtension::field_page_id 				=> $page_id,
+											dbDropletsExtension::field_css_file				=> $css_file);
 			if (!$dbDropletExt->sqlUpdateRecord($data, $where)) {
 				trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $dbDropletExt->getError()), E_USER_ERROR);
 				return false;
@@ -98,7 +109,8 @@ function register_droplet($droplet_name, $page_id, $module_directory, $register_
 		dbDropletsExtension::field_droplet_name 			=> $droplet_name,
 		dbDropletsExtension::field_page_id						=> $page_id,
 		dbDropletsExtension::field_module_directory 	=> $module_directory,
-		dbDropletsExtension::field_type							=> $register_type
+		dbDropletsExtension::field_type								=> $register_type,
+		dbDropletsExtension::field_css_file						=> $css_file
 	);
 	if (!$dbDropletExt->sqlInsertRecord($data)) {
 		trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $dbDropletExt->getError()), E_USER_ERROR);
@@ -125,11 +137,24 @@ function register_droplet_search($droplet_name, $page_id, $module_directory) {
  * @param STR $droplet_name
  * @param STR $page_id
  * @param STR $module_directory
+ * @return BOOL
  */
 function register_droplet_header($droplet_name, $page_id, $module_directory) { 
 	return register_droplet($droplet_name, $page_id, $module_directory, dbDropletsExtension::type_header);
 } // register_droplet_header()
 
+/**
+ * Registriert eine CSS Datei fuer das angegebene Droplet
+ * 
+ * @param STR $droplet_name
+ * @param STR $page_id
+ * @param STR $module_directory
+ * @param STR $css_file
+ * @return BOOL
+ */
+function register_droplet_css($droplet_name, $page_id, $module_directory, $css_file) {
+	return register_droplet($droplet_name, $page_id, $module_directory, dbDropletsExtension::type_css, $css_file);
+} // register_droplet_css()
 
 /**
  * Entfernt das angegebene Droplet
@@ -170,6 +195,16 @@ function unregister_droplet_header($droplet_name) {
 } // unregister_droplet_header()
 
 /**
+ * Entfernt die CSS Registrierung fuer das angegebene Droplet
+ * 
+ * @param STR $droplet_name
+ * @return BOOL
+ */
+function unregister_droplet_css($droplet_name) {
+	return unregister_droplet($droplet_name, dbDropletsExtension::type_css);
+} // unregister_droplet_css()
+
+/**
  * Bereinigt den angegebenen Droplet Namen
  * 
  * @param STR $droplet_name
@@ -184,7 +219,7 @@ function clear_droplet_name($droplet_name) {
 } // clear_droplet_name()
 
 /**
- * Bereinigt den Name dss angegebene Modul Verzeichnis
+ * Bereinigt den Name das angegebene Modul Verzeichnis
  * 
  * @param STR $module_directory
  * @return STR $module_directory
@@ -278,7 +313,8 @@ function print_page_head() {
 	$title = $wb->page_title;
 	$description = $wb->page_description;
 	$keywords = $wb->page_keywords;
-	
+	$dbDropletExt = new dbDropletsExtension();
+		
 	if (defined('TOPIC_ID')) {
 		// Es handelt sich um eine TOPICS Seite
 		$SQL = sprintf("SELECT * FROM %smod_topics WHERE topic_id='%d'", TABLE_PREFIX, TOPIC_ID);
@@ -300,7 +336,6 @@ function print_page_head() {
 	}
 	else {
 		// Droplets pruefen
-		$dbDropletExt = new dbDropletsExtension();
 		$SQL = sprintf( "SELECT * FROM %s WHERE %s='%s' AND %s='%s'",
 										$dbDropletExt->getTableName(),
 										dbDropletsExtension::field_type,
@@ -337,10 +372,38 @@ function print_page_head() {
 		}
 	}
 	
-	$head = sprintf('<meta name="description" content="%s" />'."\n".'<meta name="keywords" content="%s" />'."\n".'<title>%s</title>'."\n",
+	// Pruefen ob CSS Dateien geladen werden sollen
+	$load_css = '';
+	$SQL = sprintf( "SELECT * FROM %s WHERE %s='%s'",
+									$dbDropletExt->getTableName(),
+									dbDropletsExtension::field_type,
+									dbDropletsExtension::type_css);
+	$droplets = array();
+	if (!$dbDropletExt->sqlExec($SQL, $droplets)) {
+		trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $dbDropletExt->getError()), E_USER_ERROR);
+		return false;
+	}
+	foreach ($droplets as $droplet) { 
+		if (droplet_exists($droplet[dbDropletsExtension::field_droplet_name], $droplet[dbDropletsExtension::field_page_id])) { 
+			// das Droplet existiert
+			$css_file = WB_PATH.'/modules/'.$droplet[dbDropletsExtension::field_module_directory].'/'.$droplet[dbDropletsExtension::field_css_file];
+			if (file_exists($css_file)) { 
+				$css_file = str_replace(WB_PATH, WB_URL, $css_file);
+				$load_css .= sprintf('<link rel="stylesheet" type="text/css" href="%s" media="screen" />'."\n", $css_file);
+			}
+		}
+		else {
+			// das Droplet existiert nicht...
+			unregister_droplet_css($droplet[dbDropletsExtension::field_droplet_name]);
+		}	
+	}
+	
+	
+	$head = sprintf('<meta name="description" content="%s" />'."\n".'<meta name="keywords" content="%s" />'."\n".'<title>%s</title>'."\n".'%s',
 									$description,
 									$keywords,
-									$title);
+									$title,
+									$load_css);
 	echo $head;
 } // print_page_head()
 
