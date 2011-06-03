@@ -17,7 +17,7 @@ require_once(WB_PATH .'/modules/'.basename(dirname(__FILE__)).'/interface.php');
 
 if (!class_exists('kitToolsLibrary'))   	require_once(WB_PATH.'/modules/kit_tools/class.tools.php');
 
-function droplet_extension_search($func_vars) { 
+function droplets_extension_search($func_vars) { 
 	$dbDropletExt = new dbDropletsExtension();
 	$kitTools = new kitToolsLibrary();
 	$SQL = sprintf(	"SELECT * FROM %s WHERE %s='%s'", 

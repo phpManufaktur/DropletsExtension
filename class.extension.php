@@ -21,12 +21,13 @@ class dbDropletsExtension extends dbConnectLE {
 	const field_page_id						= 'drop_page_id';
 	const field_module_directory	= 'drop_module_dir';
 	const field_type							= 'drop_type';
-	const field_css_file					= 'drop_css_file';						
+	const field_file							= 'drop_file';		 				
 	const field_timestamp					= 'drop_timestamp';
 	
 	const type_css								= 'css';
 	const type_search							= 'search';
 	const type_header							= 'header';
+	const type_javascript					= 'javascript';
 	const type_undefined					= 'undefined';
 	
 	public function __construct($createTables = false) {
@@ -38,7 +39,7 @@ class dbDropletsExtension extends dbConnectLE {
   	$this->addFieldDefinition(self::field_page_id, "INT(11) NOT NULL DEFAULT '-1'");
   	$this->addFieldDefinition(self::field_module_directory, "VARCHAR(255) NOT NULL DEFAULT ''");
   	$this->addFieldDefinition(self::field_type, "VARCHAR(20) NOT NULL DEFAULT '".self::type_undefined."'");
-  	$this->addFieldDefinition(self::field_css_file, "VARCHAR(255) NOT NULL DEFAULT ''");
+  	$this->addFieldDefinition(self::field_file, "VARCHAR(255) NOT NULL DEFAULT ''");
   	$this->addFieldDefinition(self::field_timestamp, "TIMESTAMP");
   	$this->checkFieldDefinitions();
   	// Tabelle erstellen
