@@ -9,7 +9,6 @@
  * @license GNU GPL (http://www.gnu.org/licenses/gpl.html)
  * @version $Id$
  * 
- * FOR VERSION- AND RELEASE NOTES PLEASE LOOK AT INFO.TXT!
  */
 
 // prevent this file from being accessed directly
@@ -27,4 +26,15 @@ $module_description   = 'dropletsExtension - integrate droplets into the Website
 $module_home          = 'http://phpmanufaktur.de/droplets_extension';
 $module_guid          = '2F1CCDD0-A922-4DDA-BDA8-FB0624F6C1FE';
 
+/**
+ * Version and Release Notes
+ * 
+ * 0.10 - first BETA-Release
+ * 
+ * 0.11 - 2011-06-04
+ * - fixed: some minor bugs
+ * - changed: DropletExtension can now handle multiple instances of the same droplet
+ * - added: JavaScript Support - register_droplet_js()
+ * 
+ */
 ?>

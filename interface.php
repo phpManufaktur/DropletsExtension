@@ -23,11 +23,12 @@ require_once(WB_PATH .'/modules/'.basename(dirname(__FILE__)).'/class.pages.php'
  * @param INT REFRENCE $page_id - die PAGE_ID fuer die das Droplet registriert ist
  * @return BOOL
  */
-function is_registered_droplet($droplet_name, $register_type, &$page_id=-1) {
+function is_registered_droplet($droplet_name, $register_type, $page_id) {
 	$dbDropletExt = new dbDropletsExtension();
 	$droplet_name = clear_droplet_name($droplet_name);
 	$where = array(	dbDropletsExtension::field_droplet_name 	=> $droplet_name,
-									dbDropletsExtension::field_type 					=> $register_type);
+									dbDropletsExtension::field_type 					=> $register_type,
+									dbDropletsExtension::field_page_id				=> $page_id);
 	$droplet = array();
 	if (!$dbDropletExt->sqlSelectRecord($where, $droplet)) {
 		trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $dbDropletExt->getError()), E_USER_ERROR);
@@ -49,7 +50,7 @@ function is_registered_droplet($droplet_name, $register_type, &$page_id=-1) {
  * @param INT REFRENCE $page_id - die PAGE_ID fuer die das Droplet registriert ist
  * @return BOOL
  */
-function is_registered_droplet_search($droplet_name, &$page_id=-1) {
+function is_registered_droplet_search($droplet_name, $page_id) {
 	return is_registered_droplet($droplet_name, dbDropletsExtension::type_search, &$page_id);
 } // is_registered_droplet_search()
 
@@ -60,7 +61,7 @@ function is_registered_droplet_search($droplet_name, &$page_id=-1) {
  * @param INT REFERENCE $page_id
  * @return BOOL
  */
-function is_registered_droplet_header($droplet_name, &$page_id=-1) {
+function is_registered_droplet_header($droplet_name, $page_id) {
 	return is_registered_droplet($droplet_name, dbDropletsExtension::type_header, &$page_id);
 } // is_registered_droplet_header()
 
@@ -71,7 +72,7 @@ function is_registered_droplet_header($droplet_name, &$page_id=-1) {
  * @param INT $page_id
  * @return BOOL
  */
-function is_registered_droplet_css($droplet_name, &$page_id=-1) {
+function is_registered_droplet_css($droplet_name, $page_id) {
 	return is_registered_droplet($droplet_name, dbDropletsExtension::type_css, $page_id);
 } // is_registered_droplet_css()
 
@@ -82,7 +83,7 @@ function is_registered_droplet_css($droplet_name, &$page_id=-1) {
  * @param INT $page_id
  * @return BOOL
  */
-function is_registered_droplet_js($droplet_name, &$page_id=-1) {
+function is_registered_droplet_js($droplet_name, $page_id) {
 	return is_registered_droplet($droplet_name, dbDropletsExtension::type_javascript, $page_id);
 } // is_registered_droplet_js()
 
@@ -102,24 +103,11 @@ function register_droplet($droplet_name, $page_id, $module_directory, $register_
 		return false;
 	}
 	$dbDropletExt = new dbDropletsExtension();
-	if (is_registered_droplet($droplet_name, $register_type, $old_page_id)) {
-		if ($old_page_id != $page_id) {
-			// Datensatz aktualisieren
-			$where = array(	dbDropletsExtension::field_droplet_name 	=> $droplet_name,
-											dbDropletsExtension::field_type						=> $register_type);
-			$data = array(	dbDropletsExtension::field_page_id 				=> $page_id,
-											dbDropletsExtension::field_file						=> $file);
-			if (!$dbDropletExt->sqlUpdateRecord($data, $where)) {
-				trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $dbDropletExt->getError()), E_USER_ERROR);
-				return false;
-			}
-			return true;
-		}
-		else {
-			// Droplet ist bereits registriert
-			return true;
-		}
-	}
+	
+	if (is_registered_droplet($droplet_name, $register_type, $page_id)) { 
+		return true;
+	} 
+
 	$module_directory = clear_module_directory($module_directory);
 	$data = array(
 		dbDropletsExtension::field_droplet_name 			=> $droplet_name,
@@ -191,11 +179,12 @@ function register_droplet_js($droplet_name, $page_id, $module_directory, $file) 
  * @param STR $droplet_name
  * @return BOOL
  */
-function unregister_droplet($droplet_name, $register_type) {
+function unregister_droplet($droplet_name, $register_type, $page_id) {
 	$droplet_name = clear_droplet_name($droplet_name);
 	$dbDropletExt = new dbDropletsExtension();
-	$where = array(	dbDropletsExtension::field_droplet_name 	=> $droplet_name,
-									dbDropletsExtension::field_type					=> $register_type);
+	$where = array(	dbDropletsExtension::field_droplet_name => $droplet_name,
+									dbDropletsExtension::field_type					=> $register_type,
+									dbDropletsExtension::field_page_id			=> $page_id);
 	if (!$dbDropletExt->sqlDeleteRecord($where)) {
 		trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $dbDropletExt->getError()), E_USER_ERROR);
 		return false;
@@ -209,8 +198,8 @@ function unregister_droplet($droplet_name, $register_type) {
  * @param STR $droplet_name
  * @return BOOL
  */
-function unregister_droplet_search($droplet_name) {
-	return unregister_droplet($droplet_name, dbDropletsExtension::type_search);
+function unregister_droplet_search($droplet_name, $page_id) {
+	return unregister_droplet($droplet_name, dbDropletsExtension::type_search, $page_id);
 } // unregister_droplet_search()
 
 /**
@@ -219,8 +208,8 @@ function unregister_droplet_search($droplet_name) {
  * @param STR $droplet_name
  * @return BOOL
  */
-function unregister_droplet_header($droplet_name) {
-	return unregister_droplet($droplet_name, dbDropletsExtension::type_header);
+function unregister_droplet_header($droplet_name, $page_id) {
+	return unregister_droplet($droplet_name, dbDropletsExtension::type_header, $page_id);
 } // unregister_droplet_header()
 
 /**
@@ -229,8 +218,8 @@ function unregister_droplet_header($droplet_name) {
  * @param STR $droplet_name
  * @return BOOL
  */
-function unregister_droplet_css($droplet_name) {
-	return unregister_droplet($droplet_name, dbDropletsExtension::type_css);
+function unregister_droplet_css($droplet_name, $page_id) {
+	return unregister_droplet($droplet_name, dbDropletsExtension::type_css, $page_id);
 } // unregister_droplet_css()
 
 /**
@@ -239,8 +228,8 @@ function unregister_droplet_css($droplet_name) {
  * @param STR $droplet_name
  * @return BOOL
  */
-function unregister_droplet_js($droplet_name) {
-	return unregister_droplet($droplet_name, dbDropletsExtension::type_javascript);
+function unregister_droplet_js($droplet_name, $page_id) {
+	return unregister_droplet($droplet_name, dbDropletsExtension::type_javascript, $page_id);
 } // unregister_droplet_css()
 
 /**
