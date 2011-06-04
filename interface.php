@@ -51,7 +51,7 @@ function is_registered_droplet($droplet_name, $register_type, $page_id) {
  * @return BOOL
  */
 function is_registered_droplet_search($droplet_name, $page_id) {
-	return is_registered_droplet($droplet_name, dbDropletsExtension::type_search, &$page_id);
+	return is_registered_droplet($droplet_name, dbDropletsExtension::type_search, $page_id);
 } // is_registered_droplet_search()
 
 /**
@@ -62,7 +62,7 @@ function is_registered_droplet_search($droplet_name, $page_id) {
  * @return BOOL
  */
 function is_registered_droplet_header($droplet_name, $page_id) {
-	return is_registered_droplet($droplet_name, dbDropletsExtension::type_header, &$page_id);
+	return is_registered_droplet($droplet_name, dbDropletsExtension::type_header, $page_id);
 } // is_registered_droplet_header()
 
 /**
