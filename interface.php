@@ -107,7 +107,6 @@ function register_droplet($droplet_name, $page_id, $module_directory, $register_
 	if (is_registered_droplet($droplet_name, $register_type, $page_id)) { 
 		return true;
 	} 
-
 	$module_directory = clear_module_directory($module_directory);
 	$data = array(
 		dbDropletsExtension::field_droplet_name 			=> $droplet_name,
@@ -267,7 +266,8 @@ function clear_module_directory($module_directory) {
  * @param INT $page_id
  * @return BOOL
  */
-function droplet_exists($droplet_name, $page_id) {
+function droplet_exists($droplet_name, $page_id) { 
+	global $database;
 	$droplet_name = clear_droplet_name($droplet_name);
 	$dbWYSIWYG = new db_wb_mod_wysiwyg();
 	$SQL = sprintf(	"SELECT * FROM %s WHERE %s='%s' AND ((%s LIKE '%%[[%s?%%') OR (%s LIKE '%%[[%s]]%%'))",
@@ -283,7 +283,23 @@ function droplet_exists($droplet_name, $page_id) {
 		trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $dbWYSIWYG->getError()), E_USER_ERROR);
 		return false;
 	}
-	return (count($result) > 0) ? true : false;
+	if (count($result) > 0) {
+		return true;
+	}
+	// moeglicher Weise TOPICs?
+	$SQL = sprintf("SHOW TABLE STATUS LIKE '%smod_topics'", TABLE_PREFIX);
+	$query = $database->query($SQL);
+	if ($query->numRows() > 0) {
+		// TOPICS ist installiert
+		$SQL = sprintf(	"SELECT topic_id FROM %smod_topics WHERE page_id='%s' AND ((content_long LIKE '%%[[%s?%%') OR (content_long LIKE '%%[[%s]]%%'))",
+										TABLE_PREFIX,
+										$page_id,
+										$droplet_name,
+										$droplet_name);
+		$query = $database->query($SQL);
+		if ($query->numRows() > 0) return true; 
+	}
+	return false;
 } // droplet_exists()
 
 /**
