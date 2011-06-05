@@ -17,7 +17,7 @@ if (!defined('WB_PATH')) die('invalid call of '.$_SERVER['SCRIPT_NAME']);
 $module_directory     = 'droplets_extension';
 $module_name          = 'dropletsExtension';
 $module_function      = 'page';
-$module_version       = '0.12';
+$module_version       = '0.13';
 $module_status        = 'Beta';
 $module_platform      = '2.8'; 
 $module_author        = 'Ralf Hertsch, Berlin (Germany)';
@@ -29,8 +29,11 @@ $module_guid          = '2F1CCDD0-A922-4DDA-BDA8-FB0624F6C1FE';
 /**
  * Version and Release Notes
  * 
+ * 0.13 - 2011-06-05
+ * - fixed: problem setting header informations at TOPICs articles
+ * 
  * 0.12 - 2011-06-04
- * - addedx: support for topics
+ * - added: support for topics
  * 
  * 0.11 - 2011-06-04
  * - fixed: some minor bugs

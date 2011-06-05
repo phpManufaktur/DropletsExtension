@@ -358,7 +358,7 @@ function print_page_head() {
 	$description = $wb->page_description;
 	$keywords = $wb->page_keywords;
 	$dbDropletExt = new dbDropletsExtension();
-		
+
 	if (defined('TOPIC_ID')) {
 		// Es handelt sich um eine TOPICS Seite
 		$SQL = sprintf("SELECT * FROM %smod_topics WHERE topic_id='%d'", TABLE_PREFIX, TOPIC_ID);
@@ -378,41 +378,40 @@ function print_page_head() {
 			return false;
   	}		
 	}
-	else {
-		// Droplets pruefen
-		$SQL = sprintf( "SELECT * FROM %s WHERE %s='%s' AND %s='%s'",
-										$dbDropletExt->getTableName(),
-										dbDropletsExtension::field_type,
-										dbDropletsExtension::type_header,
-										dbDropletsExtension::field_page_id,
-										$page_id); 
-		$droplet = array();
-		if (!$dbDropletExt->sqlExec($SQL, $droplet)) {
-			trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $dbDropletExt->getError()), E_USER_ERROR);
-			return false;
-		}
-		if (count($droplet) > 0) {
-			// es ist ein Droplet angemeldet
-			$droplet = $droplet[0];
-			if (droplet_exists($droplet[dbDropletsExtension::field_droplet_name], $page_id)) { 
-				// das Droplet existiert
-				if (file_exists(WB_PATH.'/modules/'.$droplet[dbDropletsExtension::field_module_directory].'/droplet.extension.php')) { 
-					include(WB_PATH.'/modules/'.$droplet[dbDropletsExtension::field_module_directory].'/droplet.extension.php');
-					$user_func = $droplet[dbDropletsExtension::field_module_directory].'_droplet_header';
-					if (function_exists($user_func)) { 
-						$header = call_user_func($user_func, $page_id);
-						if (is_array($header)) {
-							if (isset($header['title']) && !empty($header['title'])) $title = $header['title'];
-							if (isset($header['description']) && !empty($header['description'])) $description = $header['description'];
-							if (isset($header['keywords']) && !empty($header['keywords'])) $keywords = $header['keywords']; 
-						}
+
+	// Droplets pruefen
+	$SQL = sprintf( "SELECT * FROM %s WHERE %s='%s' AND %s='%s'",
+									$dbDropletExt->getTableName(),
+									dbDropletsExtension::field_type,
+									dbDropletsExtension::type_header,
+									dbDropletsExtension::field_page_id,
+									$page_id); 
+	$droplet = array();
+	if (!$dbDropletExt->sqlExec($SQL, $droplet)) {
+		trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $dbDropletExt->getError()), E_USER_ERROR);
+		return false;
+	}
+	if (count($droplet) > 0) {
+		// es ist ein Droplet angemeldet
+		$droplet = $droplet[0];
+		if (droplet_exists($droplet[dbDropletsExtension::field_droplet_name], $page_id)) { 
+			// das Droplet existiert
+			if (file_exists(WB_PATH.'/modules/'.$droplet[dbDropletsExtension::field_module_directory].'/droplet.extension.php')) { 
+				include(WB_PATH.'/modules/'.$droplet[dbDropletsExtension::field_module_directory].'/droplet.extension.php');
+				$user_func = $droplet[dbDropletsExtension::field_module_directory].'_droplet_header';
+				if (function_exists($user_func)) { 
+					$header = call_user_func($user_func, $page_id);
+					if (is_array($header)) {
+						if (isset($header['title']) && !empty($header['title'])) $title = $header['title'];
+						if (isset($header['description']) && !empty($header['description'])) $description = $header['description'];
+						if (isset($header['keywords']) && !empty($header['keywords'])) $keywords = $header['keywords']; 
 					}
 				}
 			}
-			else {
-				// das Droplet existiert nicht...
-				unregister_droplet_header($droplet[dbDropletsExtension::field_droplet_name]);
-			}
+		}
+		else {
+			// das Droplet existiert nicht...
+			unregister_droplet_header($droplet[dbDropletsExtension::field_droplet_name]);
 		}
 	}
 	
