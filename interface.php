@@ -14,6 +14,7 @@ if (!defined('WB_PATH')) die('invalid call of '.$_SERVER['SCRIPT_NAME']);
 
 require_once(WB_PATH .'/modules/'.basename(dirname(__FILE__)).'/class.extension.php');
 require_once(WB_PATH .'/modules/'.basename(dirname(__FILE__)).'/class.pages.php');
+require_once(WB_PATH .'/modules/kit_tools/class.tools.php');
  
 /**
  * Ueberprueft ob das angegebene Droplet registriert ist
@@ -349,7 +350,7 @@ function check_droplet_search_section($page_id=-1) {
 } // check_droplet_search_section()
 
 
-function print_page_head() {
+function print_page_head($facebook=false) {
 	global $database;
 	global $wb;
 	global $page_id;
@@ -379,6 +380,11 @@ function print_page_head() {
   	}		
 	}
 
+	$params = array(
+		'title'				=> $title,
+		'description'	=> $description,
+		'keywords'		=> $keywords
+	);
 	// Droplets pruefen
 	$SQL = sprintf( "SELECT * FROM %s WHERE %s='%s' AND %s='%s'",
 									$dbDropletExt->getTableName(),
@@ -461,7 +467,98 @@ function print_page_head() {
 									$title,
 									$load_css,
 									$load_js);
+	if ($facebook) {
+		if (false !== ($image = getFirstImageFromContent($page_id))) {
+			$tools = new kitToolsLibrary();
+			$tools->getUrlByPageID($page_id, $url);
+			$head .= sprintf(	'<meta property="og:image" content="%s" />'."\n".
+                     		'<meta property="og:type" content="article" />'."\n". 
+                     		'<meta property="og:title" content="%s" />'."\n".
+												'<meta property="og:description" content="%s" />'."\n".
+                      	'<meta property="og:url" content="%s" />',    
+                     		$image,
+                     		$title,
+                     		$description, 
+                     		$url);
+		}
+	}
 	echo $head;
 } // print_page_head()
+
+/**
+ * Gibt die URL des ersten Bildes aus dem Inhalt der aktiven Seite zurueck.
+ * Dies kann ein WYSIWYG Abschnitt oder ein TOPICs Artikel sein.
+ * 
+ * @param INT $page_id
+ * @return STR URL oder BOOL FALSE
+ */
+function getFirstImageFromContent($page_id) {
+	global $database;
+	$img = array();
+	if (defined('TOPIC_ID')) {
+		// es handelt sich um einen TOPIC Artikel
+		$SQL = sprintf("SELECT content_long FROM %smod_topics WHERE topic_id='%d'", TABLE_PREFIX, TOPIC_ID);
+  	if (false !== ($topics = $database->query($SQL))) {
+  		if (false !== ($topic = $topics->fetchRow(MYSQL_ASSOC))) {
+  			if (isset($topic['content_long']) && !empty($topic['content_long'])) {
+  				$content = $topic['content_long'];
+  			}
+  		}
+  		else {
+  			trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
+				return false;
+  		}
+  	}
+  	else {
+  		trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
+			return false;
+  	}
+	}
+	else {
+		// es handelt sich um einen normalen WYSIWYG Artikel
+		$db_wysiwyg = new db_wb_mod_wysiwyg();
+		$SQL = sprintf(	"SELECT %s FROM %s WHERE %s='%s' LIMIT 1", 
+										db_wb_mod_wysiwyg::field_content, 
+										$db_wysiwyg->getTableName(), 
+										db_wb_mod_wysiwyg::field_page_id,
+										$page_id);
+		$result = array();
+		if (!$db_wysiwyg->sqlExec($SQL, $result)) {
+			trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $db_wysiwyg->getError()));
+			return false;
+		} 
+		if (count($result) == 1) {
+			$content = $result[0][db_wb_mod_wysiwyg::field_content];
+		}
+	}
+	if (!empty($content)) {
+		// Inhalt durchsuchen
+		if (preg_match('/<img[^>]*>/', $content, $matches)) {
+  		preg_match_all('/([a-zA-Z]*[a-zA-Z])\s{0,3}[=]\s{0,3}("[^"\r\n]*)"/', $matches[0], $attr);
+  		foreach ($attr as $attributes) {
+				foreach ($attributes as $attribut) {
+					if (strpos($attribut, "=") !== false) {
+						list($key, $value) = explode("=", $attribut);
+						$value = trim($value);
+						$value = substr($value, 1, strlen($value)-2);
+						$img[strtolower(trim($key))] = trim($value);
+					}
+				}
+			}
+  	}
+	}
+	if (isset($img['src'])) {
+		// es wurde ein Bild gefunden und ausgelesen
+		$image = $img['src']; 
+		if (strpos($image, '..') !== false) {
+			$image = substr($image, strpos($image, MEDIA_DIRECTORY.'/')); echo $image;
+			$image = WB_URL.$image;
+		}
+		return $image;
+	}
+	else {
+		return false;
+	}
+} // getFirstImageFromContent()
 
 ?>
