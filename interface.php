@@ -417,7 +417,7 @@ function print_page_head($facebook=false) {
 		}
 		else {
 			// das Droplet existiert nicht...
-			unregister_droplet_header($droplet[dbDropletsExtension::field_droplet_name]);
+			unregister_droplet_header($droplet[dbDropletsExtension::field_droplet_name], $page_id);
 		}
 	}
 	
@@ -453,11 +453,11 @@ function print_page_head($facebook=false) {
 		}
 		elseif ($droplet[dbDropletsExtension::field_type] == dbDropletsExtension::type_css) {
 			// das Droplet existiert nicht...
-			unregister_droplet_css($droplet[dbDropletsExtension::field_droplet_name]);
+			unregister_droplet_css($droplet[dbDropletsExtension::field_droplet_name], $page_id);
 		}	
 		else {
 			// JavaScript ...
-			unregister_droplet_js($droplet[dbDropletsExtension::field_droplet_name]);
+			unregister_droplet_js($droplet[dbDropletsExtension::field_droplet_name], $page_id);
 		}
 	}
 	
