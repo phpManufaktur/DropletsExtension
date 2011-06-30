@@ -100,7 +100,7 @@ function register_droplet($droplet_name, $page_id, $module_directory, $register_
 	// zuerst pruefen, ob eine droplet_search section existiert
 	if ($register_type == dbDropletsExtension::type_search) check_droplet_search_section($page_id); 
 	$droplet_name = clear_droplet_name($droplet_name);
-	if (!droplet_exists($droplet_name, $page_id)) {
+	if (!droplet_exists($droplet_name, $page_id)) { 
 		return false;
 	}
 	$dbDropletExt = new dbDropletsExtension();
@@ -116,7 +116,7 @@ function register_droplet($droplet_name, $page_id, $module_directory, $register_
 		dbDropletsExtension::field_type								=> $register_type,
 		dbDropletsExtension::field_file								=> $file
 	);
-	if (!$dbDropletExt->sqlInsertRecord($data)) {
+	if (!$dbDropletExt->sqlInsertRecord($data)) { 
 		trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $dbDropletExt->getError()), E_USER_ERROR);
 		return false;
 	}
@@ -156,7 +156,7 @@ function register_droplet_header($droplet_name, $page_id, $module_directory) {
  * @param STR $file
  * @return BOOL
  */
-function register_droplet_css($droplet_name, $page_id, $module_directory, $file) {
+function register_droplet_css($droplet_name, $page_id, $module_directory, $file) {  
 	return register_droplet($droplet_name, $page_id, $module_directory, dbDropletsExtension::type_css, $file);
 } // register_droplet_css()
 
