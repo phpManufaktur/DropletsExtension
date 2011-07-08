@@ -362,7 +362,7 @@ function print_page_head($facebook=false) {
 
 	if (defined('TOPIC_ID')) {
 		// Es handelt sich um eine TOPICS Seite
-		$SQL = sprintf("SELECT * FROM %smod_topics WHERE topic_id='%d'", TABLE_PREFIX, TOPIC_ID);
+		$SQL = sprintf("SELECT title, short_description, keywords FROM %smod_topics WHERE topic_id='%d'", TABLE_PREFIX, TOPIC_ID);
   	if (false !== ($topics = $database->query($SQL))) {
   		if (false !== ($topic = $topics->fetchRow(MYSQL_ASSOC))) {
   			if (isset($topic['title']) && !empty($topic['title'])) $title = $topic['title'];
@@ -378,6 +378,31 @@ function print_page_head($facebook=false) {
   		trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
 			return false;
   	}		
+	}
+	elseif (defined('POST_ID')) {
+		// Es handelt sich um eine NEWS Seite
+		$SQL = sprintf("SELECT title, content_short FROM %smod_news_posts WHERE post_id='%d'", TABLE_PREFIX, POST_ID);
+		if (false !== ($news = $database->query($SQL))) {
+			if (false !== ($new = $news->fetchRow(MYSQL_ASSOC))) {
+				if (isset($new['title']) && !empty($new['title'])) $title = $new['title'];
+				if (isset($new['content_short']) && !empty($new['content_short'])) {
+					$words = explode(' ', strip_tags($new['content_short']));
+					$description = '';
+					foreach ($words as $word) {
+						if (!empty($description)) $description .= ' ';
+						$description .= $word;
+						if (strlen($description) > 220) {
+							$description .= ' ...';
+							break;
+						}
+					}
+				}
+			}
+			else {
+				trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
+				return false;
+			}
+		}
 	}
 
 	$params = array(
