@@ -9,15 +9,31 @@
  * @license GNU GPL (http://www.gnu.org/licenses/gpl.html)
  * @version $Id$
  * 
+ * FOR VERSION- AND RELEASE NOTES PLEASE LOOK AT INFO.TXT!
  */
 
-// prevent this file from being accessed directly
-if (!defined('WB_PATH')) die('invalid call of '.$_SERVER['SCRIPT_NAME']);
+// try to include LEPTON class.secure.php to protect this file and the whole CMS!
+if (defined('WB_PATH')) {	
+	if (defined('LEPTON_VERSION')) include(WB_PATH.'/framework/class.secure.php');
+} elseif (file_exists($_SERVER['DOCUMENT_ROOT'].'/framework/class.secure.php')) {
+	include($_SERVER['DOCUMENT_ROOT'].'/framework/class.secure.php'); 
+} else {
+	$subs = explode('/', dirname($_SERVER['SCRIPT_NAME']));	$dir = $_SERVER['DOCUMENT_ROOT'];
+	$inc = false;
+	foreach ($subs as $sub) {
+		if (empty($sub)) continue; $dir .= '/'.$sub;
+		if (file_exists($dir.'/framework/class.secure.php')) { 
+			include($dir.'/framework/class.secure.php'); $inc = true;	break; 
+		} 
+	}
+	if (!$inc) trigger_error(sprintf("[ <b>%s</b> ] Can't include LEPTON class.secure.php!", $_SERVER['SCRIPT_NAME']), E_USER_ERROR);
+}
+// end include LEPTON class.secure.php
 
 $module_directory     = 'droplets_extension';
 $module_name          = 'dropletsExtension';
 $module_function      = 'page';
-$module_version       = '0.15';
+$module_version       = '0.16';
 $module_status        = 'Beta';
 $module_platform      = '2.8'; 
 $module_author        = 'Ralf Hertsch, Berlin (Germany)';
@@ -26,28 +42,4 @@ $module_description   = 'dropletsExtension - integrate droplets into the Website
 $module_home          = 'http://phpmanufaktur.de/droplets_extension';
 $module_guid          = '2F1CCDD0-A922-4DDA-BDA8-FB0624F6C1FE';
 
-/**
- * Version and Release Notes
- * 
- * 0.15 - 2011-07-08
- * - added: page_header() now supports header informations from NEWS articles
- * 
- * 0.14 - 2011-06-07
- * - added: page_header() now supports Open Graph tags for facebook
- * 
- * 0.13 - 2011-06-05
- * - fixed: problem setting header informations at TOPICs articles
- * 
- * 0.12 - 2011-06-04
- * - added: support for topics
- * 
- * 0.11 - 2011-06-04
- * - fixed: some minor bugs
- * - changed: DropletExtension can now handle multiple instances of the same droplet
- * - added: JavaScript Support - register_droplet_js()
- * 
- * 0.10 - first BETA-Release
- * 
- * 
- */
 ?>

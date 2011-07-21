@@ -30,23 +30,4 @@ if (defined('WB_PATH')) {
 }
 // end include LEPTON class.secure.php
 
-require_once(WB_PATH .'/modules/'.basename(dirname(__FILE__)).'/class.extension.php');
-
-global $admin;
-
-$error = '';
-
-$dbDropletsExt = new dbDropletsExtension();
-
-if ($dbDropletsExt->sqlFieldExists('drop_css_file')) {
-	if (!$dbDropletsExt->sqlAlterTableChangeField('drop_css_file', dbDropletsExtension::field_file, "VARCHAR(255) NOT NULL DEFAULT ''")) {
-		$error .= sprintf('[UPGRADE] %s', $dbDropletsExt->getError());
-	}
-}
-
-// Prompt Errors
-if (!empty($error)) {
-	$admin->print_error($error);
-}
-
 ?>

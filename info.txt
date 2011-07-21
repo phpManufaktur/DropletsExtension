@@ -1,0 +1,39 @@
+/**
+ * dropletsExtension
+ * 
+ * @author Ralf Hertsch (ralf.hertsch@phpmanufaktur.de)
+ * @link http://phpmanufaktur.de
+ * @copyright 2011
+ * @license GNU GPL (http://www.gnu.org/licenses/gpl.html)
+ * @version $Id$
+ */
+ 
+Release 0.16
+2011-07-21
+- grant compatibillity for LEPTON CMS
+ 
+Release 0.15
+2011-07-08
+- added: page_header() now supports header informations from NEWS articles
+
+Release 0.14
+2011-06-07
+- added: page_header() now supports Open Graph tags for facebook
+
+Release 0.13
+2011-06-05
+- fixed: problem setting header informations at TOPICs articles
+
+Release 0.12
+2011-06-04
+- added: support for topics
+
+Release 0.11
+2011-06-04
+- fixed: some minor bugs
+- changed: DropletExtension can now handle multiple instances of the same droplet
+- added: JavaScript Support - register_droplet_js()
+
+0.10 - first BETA-Release
+
+ 
