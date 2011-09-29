@@ -594,7 +594,7 @@ function getFirstImageFromContent($page_id) {
 		// es wurde ein Bild gefunden und ausgelesen
 		$image = $img['src']; 
 		if (strpos($image, '..') !== false) {
-			$image = substr($image, strpos($image, MEDIA_DIRECTORY.'/')); echo $image;
+			$image = substr($image, strpos($image, MEDIA_DIRECTORY.'/')); 
 			$image = WB_URL.$image;
 		}
 		return $image;
