@@ -467,12 +467,14 @@ function print_page_head($facebook=false) {
 	// Pruefen ob CSS Dateien geladen werden sollen
 	$load_css = '';
 	$load_js = '';
-	$SQL = sprintf( "SELECT * FROM %s WHERE (%s='%s' OR %s='%s')",
+	$SQL = sprintf( "SELECT * FROM %s WHERE (%s='%s' OR %s='%s') AND `%s`='%s'",
 									$dbDropletExt->getTableName(),
 									dbDropletsExtension::field_type,
 									dbDropletsExtension::type_css,
 									dbDropletsExtension::field_type,
-									dbDropletsExtension::type_javascript);
+									dbDropletsExtension::type_javascript,
+									dbDropletsExtension::field_page_id,
+									$page_id);
 	$droplets = array();
 	if (!$dbDropletExt->sqlExec($SQL, $droplets)) {
 		trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $dbDropletExt->getError()), E_USER_ERROR);

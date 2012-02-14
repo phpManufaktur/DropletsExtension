@@ -33,7 +33,7 @@ if (defined('WB_PATH')) {
 $module_directory     = 'droplets_extension';
 $module_name          = 'dropletsExtension';
 $module_function      = 'page';
-$module_version       = '0.16';
+$module_version       = '0.17';
 $module_status        = 'Beta';
 $module_platform      = '2.8'; 
 $module_author        = 'Ralf Hertsch, Berlin (Germany)';
