@@ -80,7 +80,7 @@ function droplets_extension_search($func_vars) {
       }
     }
     else {
-      unregister_droplet_search($droplet[dbDropletsExtension::field_droplet_name]);
+      unregister_droplet_search($droplet[dbDropletsExtension::field_droplet_name], $func_page_id);
     }
   }
   return $result;
