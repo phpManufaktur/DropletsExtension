@@ -1,0 +1,45 @@
+### DropletsExtension
+ 
+0.19 - 2012-06-05
+
+* updated header informations
+* added CHANGELOG, LICENSE and README.md
+* removed info.txt 
+ 
+0.18 - 2012-02-18
+
+* added: print_page_head() check now for custom CSS and JS files, i.e. if the file /custom.droplet.css exists it will be loaded instead of /droplet.css
+ 
+0.17 - 2012-02-14
+
+* fixed: print_page_head() does not check for $page_id and load more CSS/JS files then neccessary
+ 
+0.16 - 2011-07-21
+
+* added: grant compatibillity for LEPTON CMS
+ 
+0.15 - 2011-07-08
+
+* added: page_header() now supports header informations from NEWS articles
+
+0.14 - 2011-06-07
+
+* added: page_header() now supports Open Graph tags for facebook
+
+0.13 - 2011-06-05
+
+* fixed: problem setting header informations at TOPICs articles
+
+0.12 - 2011-06-04
+
+* added: support for topics
+
+0.11 - 2011-06-04
+
+* fixed: some minor bugs
+* changed: DropletExtension can now handle multiple instances of the same droplet
+* added: JavaScript Support - register_droplet_js()
+
+0.10 - 2011-06-15
+
+* first BETA-Release
