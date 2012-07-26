@@ -367,7 +367,7 @@ function print_page_head($facebook = false) {
 
   if (defined('TOPIC_ID')) {
     // Es handelt sich um eine TOPICS Seite
-    $SQL = sprintf("SELECT title, short_description, keywords FROM %smod_topics WHERE topic_id='%d'", TABLE_PREFIX, TOPIC_ID);
+    $SQL = sprintf("SELECT title, description, keywords FROM %smod_topics WHERE topic_id='%d'", TABLE_PREFIX, TOPIC_ID);
     if (false !== ($topics = $database->query($SQL))) {
       if (false !== ($topic = $topics->fetchRow(MYSQL_ASSOC))) {
         if (isset($topic['title']) && !empty($topic['title']))
