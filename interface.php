@@ -372,8 +372,8 @@ function print_page_head($facebook = false) {
       if (false !== ($topic = $topics->fetchRow(MYSQL_ASSOC))) {
         if (isset($topic['title']) && !empty($topic['title']))
           $title = $topic['title'];
-        if (isset($topic['short_description']) && !empty($topic['short_description']))
-          $description = $topic['short_description'];
+        if (isset($topic['description']) && !empty($topic['description']))
+          $description = $topic['description'];
         if (isset($topic['keywords']) && !empty($topic['keywords']))
           $keywords = $topic['keywords'];
       }
