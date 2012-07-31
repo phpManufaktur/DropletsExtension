@@ -501,15 +501,37 @@ function print_page_head($facebook = false) {
     }
   }
 
-  $head = sprintf('<meta name="description" content="%s" />'."\n".'<meta name="keywords" content="%s" />'."\n".'<title>%s</title>'."\n".'%s%s', $description, $keywords, $title, $load_css, $load_js);
-  if ($facebook) {
-    if (false !== ($image = getFirstImageFromContent($page_id))) {
-      $tools = new kitToolsLibrary();
-      $url = '';
-      $tools->getUrlByPageID($page_id, $url);
-      $head .= sprintf('<meta property="og:image" content="%s" />'."\n".'<meta property="og:type" content="article" />'."\n".'<meta property="og:title" content="%s" />'."\n".'<meta property="og:description" content="%s" />'."\n".'<meta property="og:url" content="%s" />', $image, $title, $description, $url);
-    }
+  if ($facebook && (false !== ($image = getFirstImageFromContent($page_id)))) {
+    $tools = new kitToolsLibrary();
+    $url = '';
+    $tools->getUrlByPageID($page_id, $url);
+
+$head = <<<EOD
+  <!-- dropletsExtension -->
+  <meta name="description" content="$description" />
+  <meta name="keywords" content="$keywords" />
+  <title>$title</title>
+  <meta property="og:image" content="$image" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="$title" />
+  <meta property="og:description" content="$description" />
+  <meta property="og:url" content="$url" />
+  <!-- /dropletsExtension -->
+EOD;
+
   }
+  else {
+
+$head = <<<EOD
+  <!-- dropletsExtension -->
+  <meta name="description" content="$description" />
+  <meta name="keywords" content="$keywords" />
+  <title>$title</title>
+  <!-- /dropletsExtension -->
+EOD;
+
+  }
+
   echo $head;
 } // print_page_head()
 
@@ -557,6 +579,14 @@ function getFirstImageFromContent($page_id) {
   }
   if (!empty($content)) {
     // Inhalt durchsuchen
+
+    if (file_exists(WB_PATH .'/modules/droplets/droplets.php')) {
+      // we must process the droplets to get the real output content
+      include_once(WB_PATH .'/modules/droplets/droplets.php');
+      if (function_exists('evalDroplets'))
+        $content = evalDroplets($content);
+    }
+
     if (preg_match('/<img[^>]*>/', $content, $matches)) {
       preg_match_all('/([a-zA-Z]*[a-zA-Z])\s{0,3}[=]\s{0,3}("[^"\r\n]*)"/', $matches[0], $attr);
       foreach ($attr as $attributes) {

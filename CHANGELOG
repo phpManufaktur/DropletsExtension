@@ -1,9 +1,11 @@
 ### DropletsExtension
 
-0.21 - NOT PUBLISHED
+0.21 - 2012-07-31
 
 * print_page_head() deliverd for TOPICS the "short_description" instead of the
   correct "description" field
+* if print_page_head(true) is set to true (Facebook support) DropletsExtension 
+  now process droplets before scanning the content for images 
 
 0.20 - 2012-06-14
 
