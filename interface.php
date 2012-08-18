@@ -355,7 +355,7 @@ function check_droplet_search_section($page_id = -1) {
   return true;
 } // check_droplet_search_section()
 
-function print_page_head($facebook = false) {
+function print_page_head($facebook=false, $no_exec_droplets=array()) {
   global $database;
   global $wb;
   global $page_id;
@@ -501,7 +501,13 @@ function print_page_head($facebook = false) {
     }
   }
 
-  if ($facebook && (false !== ($image = getFirstImageFromContent($page_id)))) {
+  $exec_droplets = true;
+  foreach ($no_exec_droplets as $id) {
+    if (($id == $page_id) || ($id == -1))
+      $exec_droplets = false;
+  }
+
+  if ($facebook && (false !== ($image = getFirstImageFromContent($page_id, $exec_droplets)))) {
     $tools = new kitToolsLibrary();
     $url = '';
     $tools->getUrlByPageID($page_id, $url);
@@ -542,7 +548,7 @@ EOD;
  * @param INT $page_id
  * @return STR URL oder BOOL FALSE
  */
-function getFirstImageFromContent($page_id) {
+function getFirstImageFromContent($page_id, $exec_droplets=true) {
   global $database;
   $img = array();
   if (defined('TOPIC_ID')) {
@@ -579,14 +585,14 @@ function getFirstImageFromContent($page_id) {
   }
   if (!empty($content)) {
     // Inhalt durchsuchen
-
-    if (file_exists(WB_PATH .'/modules/droplets/droplets.php')) {
+    if ($exec_droplets && file_exists(WB_PATH .'/modules/droplets/droplets.php')) {
       // we must process the droplets to get the real output content
-      include_once(WB_PATH .'/modules/droplets/droplets.php');
-      if (function_exists('evalDroplets'))
-        $content = evalDroplets($content);
+      ob_start();
+        include_once(WB_PATH .'/modules/droplets/droplets.php');
+        if (function_exists('evalDroplets'))
+          $content = evalDroplets($content);
+      ob_end_clean();
     }
-
     if (preg_match('/<img[^>]*>/', $content, $matches)) {
       preg_match_all('/([a-zA-Z]*[a-zA-Z])\s{0,3}[=]\s{0,3}("[^"\r\n]*)"/', $matches[0], $attr);
       foreach ($attr as $attributes) {

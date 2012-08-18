@@ -1,5 +1,11 @@
 ### DropletsExtension
 
+0.22 - NOT PUBLISHED YET
+
+* print_page_head() got an additional parameter $no_exec_droplets as array to 
+  enable to specify pages where the droplets should not be executed by the 
+  function.
+
 0.21 - 2012-07-31
 
 * print_page_head() deliverd for TOPICS the "short_description" instead of the
