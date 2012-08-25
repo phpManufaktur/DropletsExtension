@@ -33,7 +33,7 @@ else {
 
 require_once(WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/class.extension.php');
 //require_once(WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/class.pages.php');
-require_once(WB_PATH.'/modules/kit_tools/class.tools.php');
+//require_once(WB_PATH.'/modules/kit_tools/class.tools.php');
 
 /**
  * Ueberprueft ob das angegebene Droplet registriert ist
@@ -376,6 +376,32 @@ function unsanitizeText($text) {
 } // unsanitizeText()
 
 
+function getURLbyPageID($page_id) {
+  global $database;
+
+  if (defined('TOPIC_ID')) {
+    // this is a TOPICS page
+    $SQL = "SELECT `link` FROM `".TABLE_PREFIX."mod_topics` WHERE `topic_id`='".TOPIC_ID."'";
+    $link = $database->get_one($SQL);
+    if ($database->is_error()) {
+      trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
+      return false;
+    }
+    // include TOPICS settings
+    global $topics_directory;
+    include_once WB_PATH . '/modules/topics/module_settings.php';
+    return WB_URL . $topics_directory . $link . PAGE_EXTENSION;
+  }
+
+  $SQL = "SELECT `link` FROM `".TABLE_PREFIX."pages` WHERE `page_id`='$page_id'";
+  $link = $database->get_one($SQL, MYSQL_ASSOC);
+  if ($database->is_error()) {
+    trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
+    return false;
+  }
+  return WB_URL.PAGES_DIRECTORY.$link.PAGE_EXTENSION;
+}
+
 function print_page_head($facebook=false, $no_exec_droplets=array()) {
   global $database;
   global $wb;
@@ -529,9 +555,7 @@ function print_page_head($facebook=false, $no_exec_droplets=array()) {
   }
 
   if ($facebook && (false !== ($image = getFirstImageFromContent($page_id, $exec_droplets)))) {
-    $tools = new kitToolsLibrary();
-    $url = '';
-    $tools->getUrlByPageID($page_id, $url);
+    $url = getURLbyPageID($page_id);
 
 $head = <<<EOD
   <!-- dropletsExtension -->
@@ -571,6 +595,7 @@ EOD;
  */
 function getFirstImageFromContent($page_id, $exec_droplets=true) {
   global $database;
+
   $img = array();
   $content = '';
   if (defined('TOPIC_ID')) {
@@ -600,7 +625,7 @@ function getFirstImageFromContent($page_id, $exec_droplets=true) {
       return false;
     }
     if (is_string($result))
-      $content = unsanitizeText($content);
+      $content = unsanitizeText($result);
   }
   if (!empty($content)) {
     // scan content for images
