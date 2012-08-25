@@ -291,23 +291,30 @@ function clear_module_directory($module_directory) {
 function droplet_exists($droplet_name, $page_id) {
   global $database;
   $droplet_name = clear_droplet_name($droplet_name);
-  $dbWYSIWYG = new db_wb_mod_wysiwyg();
-  $SQL = sprintf("SELECT * FROM %s WHERE %s='%s' AND ((%s LIKE '%%[[%s?%%') OR (%s LIKE '%%[[%s]]%%'))", $dbWYSIWYG->getTableName(), db_wb_mod_wysiwyg::field_page_id, $page_id, db_wb_mod_wysiwyg::field_text, $droplet_name, db_wb_mod_wysiwyg::field_text, $droplet_name);
-  $result = array();
-  if (!$dbWYSIWYG->sqlExec($SQL, $result)) {
-    trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $dbWYSIWYG->getError()), E_USER_ERROR);
+  // check if the droplet exists in a WYSIWYG section
+  $SQL = "SELECT * FROM `".TABLE_PREFIX."mod_wysiwyg` WHERE `page_id`='$page_id' AND ".
+    "((`text` LIKE '%[[$droplet_name?%') OR (`text` LIKE '%[[$droplet_name]]%'))";
+  if (null == ($query = $database->query($SQL))) {
+    trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
     return false;
   }
-  if (count($result) > 0) {
+  if ($query->numRows() > 0)
     return true;
-  }
-  // moeglicher Weise TOPICs?
+
+  // perhaps TOPICs?
   $SQL = sprintf("SHOW TABLE STATUS LIKE '%smod_topics'", TABLE_PREFIX);
-  $query = $database->query($SQL);
+  if (null == ($query = $database->query($SQL))) {
+    trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
+    return false;
+  }
   if ($query->numRows() > 0) {
-    // TOPICS ist installiert
-    $SQL = sprintf("SELECT topic_id FROM %smod_topics WHERE page_id='%s' AND ((content_long LIKE '%%[[%s?%%') OR (content_long LIKE '%%[[%s]]%%'))", TABLE_PREFIX, $page_id, $droplet_name, $droplet_name);
-    $query = $database->query($SQL);
+    // TOPICS is installed, so check if there is a TOPIC section at this page
+    $SQL = "SELECT `topic_id` FROM `".TABLE_PREFIX."mod_topics` WHERE `page_id`='$page_id' ".
+      "AND ((`content_long` LIKE '%[[$droplet_name?%') OR (`content_long` LIKE '%[[$droplet_name]]%'))";
+    if (null == ($query = $database->query($SQL))) {
+      trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
+      return false;
+    }
     if ($query->numRows() > 0)
       return true;
   }
