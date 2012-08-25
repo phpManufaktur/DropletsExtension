@@ -6,7 +6,7 @@
  * @author Ralf Hertsch <ralf.hertsch@phpmanufaktur.de>
  * @link http://phpmanufaktur.de
  * @copyright 2011 - 2012
- * @license http://www.gnu.org/licenses/gpl.html GNU Public License (GPL)
+ * @license MIT License (MIT) http://www.opensource.org/licenses/MIT
  */
 
 // include class.secure.php to protect this file and the whole CMS!
@@ -31,24 +31,21 @@ else {
 }
 // end include class.secure.php
 
-require_once(WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/class.extension.php');
-
 global $admin;
+global $database;
 
-$tables = array('dbDropletsExtension');
-$error = '';
+// create the regular WYSIWYG table without any changes
+$SQL = "CREATE TABLE IF NOT EXISTS `".TABLE_PREFIX."mod_droplets_extension` ( ".
+    "`drop_id` INT(11) NOT NULL AUTO_INCREMENT, ".
+    "`drop_droplet_name` VARCHAR(255) NOT NULL DEFAULT '', ".
+    "`drop_page_id` INT(11) NOT NULL DEFAULT '-1', ".
+    "`drop_module_dir` VARCHAR(255) NOT NULL DEFAULT '', ".
+    "`drop_type` ENUM('css','search','header','javascript','undefined') NOT NULL DEFAULT 'undefined', ".
+    "`drop_file` VARCHAR(255) NOT NULL DEFAULT '', ".
+    "`drop_timestamp` TIMESTAMP, ".
+    "PRIMARY KEY (`drop_id`), ".
+    "KEY (`drop_droplet_name`, `drop_page_id`) ".
+    ") ENGINE=MyIsam AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci";
 
-foreach ($tables as $table) {
-  $create = null;
-  $create = new $table();
-  if (!$create->sqlTableExists()) {
-    if (!$create->sqlCreateTable()) {
-      $error .= sprintf('[INSTALLATION %s] %s', $table, $create->getError());
-    }
-  }
-}
-
-// Prompt Errors
-if (!empty($error)) {
-  $admin->print_error($error);
-}
+if (!$database->query($SQL))
+  $admin->print_error($database->get_error());

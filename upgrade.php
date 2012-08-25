@@ -6,7 +6,7 @@
  * @author Ralf Hertsch <ralf.hertsch@phpmanufaktur.de>
  * @link http://phpmanufaktur.de
  * @copyright 2011 - 2012
- * @license http://www.gnu.org/licenses/gpl.html GNU Public License (GPL)
+ * @license MIT License (MIT) http://www.opensource.org/licenses/MIT
  */
 
 // include class.secure.php to protect this file and the whole CMS!
@@ -31,21 +31,11 @@ else {
 }
 // end include class.secure.php
 
-require_once(WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/class.extension.php');
-
 global $admin;
+global $database;
 
-$error = '';
+if (file_exists(WB_PATH.'/modules/droplets_extension/class.extension.php'))
+  @unlink(WB_PATH.'/modules/droplets_extension/class.extension.php');
 
-$dbDropletsExt = new dbDropletsExtension();
-
-if ($dbDropletsExt->sqlFieldExists('drop_css_file')) {
-  if (!$dbDropletsExt->sqlAlterTableChangeField('drop_css_file', dbDropletsExtension::field_file, "VARCHAR(255) NOT NULL DEFAULT ''")) {
-    $error .= sprintf('[UPGRADE] %s', $dbDropletsExt->getError());
-  }
-}
-
-// Prompt Errors
-if (!empty($error)) {
-  $admin->print_error($error);
-}
+if (file_exists(WB_PATH.'/modules/droplets_extension/class.pages.php'))
+  @unlink(WB_PATH.'/modules/droplets_extension/class.pages.php');

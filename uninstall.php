@@ -6,7 +6,7 @@
  * @author Ralf Hertsch <ralf.hertsch@phpmanufaktur.de>
  * @link http://phpmanufaktur.de
  * @copyright 2011 - 2012
- * @license http://www.gnu.org/licenses/gpl.html GNU Public License (GPL)
+ * @license MIT License (MIT) http://www.opensource.org/licenses/MIT
  */
 
 // include class.secure.php to protect this file and the whole CMS!
@@ -31,26 +31,8 @@ else {
 }
 // end include class.secure.php
 
-require_once(WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/class.extension.php');
-
 global $admin;
+global $database;
 
-$tables = array('dbDropletsExtension');
-$error = '';
-
-foreach ($tables as $table) {
-  $delete = null;
-  $delete = new $table();
-  if ($delete->sqlTableExists()) {
-    if (!$delete->sqlDeleteTable()) {
-      $error .= sprintf('[UNINSTALL] %s', $delete->getError());
-    }
-  }
-}
-
-// Prompt Errors
-if (!empty($error)) {
-  $admin->print_error($error);
-}
-
-?>
+if (!$database->query("DROP TABLE IF EXISTS `".TABLE_PREFIX."mod_droplets_extension`"))
+  $admin->print_error($database->get_error());
