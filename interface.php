@@ -514,11 +514,11 @@ function print_page_head($facebook=false, $no_exec_droplets=array()) {
         $file = str_replace(WB_PATH, WB_URL, $file);
         if ($droplet['drop_type'] == 'css') {
           // CSS
-          $load_css .= sprintf('<link rel="stylesheet" type="text/css" href="%s" media="screen" />'."\n", $file);
+          $load_css .= sprintf("\n".'  <link rel="stylesheet" type="text/css" href="%s" media="screen" />', $file);
         }
         else {
           // JavaScript
-          $load_js .= sprintf('<script type="text/javascript" src="%s"></script>'."\n", $file);
+          $load_js .= sprintf("\n".'  <script type="text/javascript" src="%s"></script>', $file);
         }
       }
     }
@@ -546,7 +546,7 @@ $head = <<<EOD
   <meta property="og:type" content="article" />
   <meta property="og:title" content="$title" />
   <meta property="og:description" content="$description" />
-  <meta property="og:url" content="$url" />
+  <meta property="og:url" content="$url" />$load_css$load_js
   <!-- /dropletsExtension -->
 EOD;
 
@@ -557,7 +557,7 @@ $head = <<<EOD
   <!-- dropletsExtension -->
   <meta name="description" content="$description" />
   <meta name="keywords" content="$keywords" />
-  <title>$title</title>
+  <title>$title</title>$load_css$load_js
   <!-- /dropletsExtension -->
 EOD;
 
