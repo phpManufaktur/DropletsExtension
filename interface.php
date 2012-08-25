@@ -325,41 +325,39 @@ function droplet_exists($droplet_name, $page_id) {
 } // droplet_exists()
 
 /**
- * Prueft ob eine SECTION mit droplet_extension existiert und legt sie ggf. an.
+ * Check if a section for droplets_extension exists and create it if needed
  *
  * @param INT $page_id
  * @return BOOL
  */
 function check_droplet_search_section($page_id = -1) {
-  $dbSections = new db_wb_sections();
-  $SQL = sprintf("SELECT * FROM %s WHERE %s='%s'", $dbSections->getTableName(), db_wb_sections::field_module, 'droplets_extension');
-  $result = array();
-  if (!$dbSections->sqlExec($SQL, $result)) {
-    trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $dbSections->getError()), E_USER_ERROR);
+  global $database;
+
+  if ($page_id < 1) return false;
+
+  // check for a droplets_extension section
+  $SQL = "SELECT * FROM `".TABLE_PREFIX."sections` WHERE `module`='droplets_extension'";
+  if (null == ($query = $database->query($SQL))) {
+    trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
     return false;
   }
-  if (count($result) > 0)
+  if ($query->numRows() > 0)
     return true;
-  if ($page_id < 1)
-    return false;
-  $SQL = sprintf("SELECT * FROM %s WHERE %s='%s' ORDER BY %s DESC LIMIT 1", $dbSections->getTableName(), db_wb_sections::field_page_id, $page_id, db_wb_sections::field_position);
-  $result = array();
-  if (!$dbSections->sqlExec($SQL, $result)) {
-    trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $dbSections->getError()), E_USER_ERROR);
+
+  // get the position of the last section
+  $SQL = "SELECT `position` FROM `".TABLE_PREFIX."sections` WHERE `page_id`='$page_id' ORDER BY `position` DESC LIMIT 1";
+  $position = $database->get_one($SQL, MYSQL_ASSOC);
+  if ($database->is_error()) {
+    trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
     return false;
   }
-  if (count($result) < 1)
-    return false;
-  $x = $result[0][db_wb_sections::field_position];
-  $data = array(
-      db_wb_sections::field_block => 1,
-      db_wb_sections::field_publ_end => 0,
-      db_wb_sections::field_publ_start => 0,
-      db_wb_sections::field_module => 'droplets_extension',
-      db_wb_sections::field_page_id => $page_id,
-      db_wb_sections::field_position => $x + 1);
-  if (!$dbSections->sqlInsertRecord($data)) {
-    trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $dbSections->getError()), E_USER_ERROR);
+
+  // insert a new section for droplets_extension
+  $position++;
+  $SQL = "INSERT INTO `".TABLE_PREFIX."sections` (`block`,`publ_end`,`publ_start`,`module`,`page_id`,`position`) ".
+      "VALUES ('1','0','0','droplets_extension','$page_id','$position')";
+  if (!$database->query($SQL)) {
+    trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
     return false;
   }
   return true;
