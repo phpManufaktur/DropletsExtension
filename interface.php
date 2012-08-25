@@ -32,7 +32,7 @@ else {
 // end include class.secure.php
 
 require_once(WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/class.extension.php');
-require_once(WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/class.pages.php');
+//require_once(WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/class.pages.php');
 require_once(WB_PATH.'/modules/kit_tools/class.tools.php');
 
 /**
@@ -355,6 +355,19 @@ function check_droplet_search_section($page_id = -1) {
   return true;
 } // check_droplet_search_section()
 
+/**
+ * Unsanitize a text variable and prepare it for output
+ *
+ * @param string $text
+ * @return string
+ */
+function unsanitizeText($text) {
+  $text = stripcslashes($text);
+  $text = str_replace(array("&lt;","&gt;","&quot;","&#039;"), array("<",">","\"","'"), $text);
+  return $text;
+} // unsanitizeText()
+
+
 function print_page_head($facebook=false, $no_exec_droplets=array()) {
   global $database;
   global $wb;
@@ -551,40 +564,35 @@ EOD;
 function getFirstImageFromContent($page_id, $exec_droplets=true) {
   global $database;
   $img = array();
+  $content = '';
   if (defined('TOPIC_ID')) {
-    // es handelt sich um einen TOPIC Artikel
-    $SQL = sprintf("SELECT content_long FROM %smod_topics WHERE topic_id='%d'", TABLE_PREFIX, TOPIC_ID);
-    if (false !== ($topics = $database->query($SQL))) {
-      if (false !== ($topic = $topics->fetchRow(MYSQL_ASSOC))) {
-        if (isset($topic['content_long']) && !empty($topic['content_long'])) {
-          $content = $topic['content_long'];
-        }
-      }
-      else {
-        trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
-        return false;
-      }
-    }
-    else {
+    // this is a TOPICS article so get content from the TOPICS
+    $SQL = "SELECT `content_long` FROM `".TABLE_PREFIX."mod_topics` WHERE `topic_id`='".TOPIC_ID."'";
+    if (null == ($result = $database->get_one($SQL, MYSQL_ASSOC))) {
       trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
       return false;
     }
+    if (is_string($result))
+      $content = unsanitizeText($result);
   }
   else {
-    // es handelt sich um einen normalen WYSIWYG Artikel
-    $db_wysiwyg = new db_wb_mod_wysiwyg();
-    $SQL = sprintf("SELECT %s FROM %s WHERE %s='%s' LIMIT 1", db_wb_mod_wysiwyg::field_content, $db_wysiwyg->getTableName(), db_wb_mod_wysiwyg::field_page_id, $page_id);
-    $result = array();
-    if (!$db_wysiwyg->sqlExec($SQL, $result)) {
-      trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $db_wysiwyg->getError()));
+    // this is a regular WYSIWYG article
+    $SQL = "SELECT `section_id` FROM `".TABLE_PREFIX."sections` WHERE `page_id`='$page_id' AND `module`='wysiwyg' ORDER BY `position` ASC LIMIT 1";
+    if (null == ($section_id = $database->get_one($SQL, MYSQL_ASSOC))) {
+      trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
       return false;
     }
-    if (count($result) == 1) {
-      $content = $result[0][db_wb_mod_wysiwyg::field_content];
+
+    $SQL = "SELECT `content` FROM `".TABLE_PREFIX."mod_wysiwyg` WHERE `section_id`='$section_id'";
+    if (null == ($result = $database->get_one($SQL, MYSQL_ASSOC))) {
+      trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
+      return false;
     }
+    if (is_string($result))
+      $content = unsanitizeText($content);
   }
   if (!empty($content)) {
-    // Inhalt durchsuchen
+    // scan content for images
     if ($exec_droplets && file_exists(WB_PATH .'/modules/droplets/droplets.php')) {
       // we must process the droplets to get the real output content
       ob_start();
