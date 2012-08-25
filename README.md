@@ -6,12 +6,10 @@ Extend Droplets for the Content Management Systems [WebsiteBaker] [1] and [LEPTO
 
 * minimum PHP 5.2.x
 * using [WebsiteBaker] [1] _or_ using [LEPTON CMS] [2]
-* [dbConnect_LE] [4] must be installed 
-* [kitTools] [3] must be installed
 
 #### Installation
 
-* download the actual [DropletsExtension_x.xx.zip] [5] installation archive
+* download the actual [DropletsExtension] [5] installation archive
 * in CMS backend select the file from "Add-ons" -> "Modules" -> "Install module"
 
 #### First Steps
@@ -42,12 +40,11 @@ from your template and replace them with
 
 The function **print_page_head()** will work like Chio Maisrimls [simplepagehead()] [6] and is also a fully replacement for this tool.
 
-Please consult the [Add-ons website of phpManufaktur] [7] to get informations for developers how to use the DropletsExtension interface in your own add-ons.  
+Please visit the Homepage of [DropletsExtension] [7] to get more informations and join the [Addons Support Group] [8] of the phpManufaktur.  
 
 [1]: http://websitebaker2.org "WebsiteBaker Content Management System"
 [2]: http://lepton-cms.org "LEPTON CMS"
-[3]: https://github.com/phpManufaktur/kitTools/downloads
-[4]: https://github.com/phpManufaktur/dbConnect_LE/downloads
 [5]: https://github.com/phpManufaktur/DropletsExtension/downloads
 [6]: http://websitebaker.at/wb/module/simple-pagehead.html
-[7]: https://addons.phpmanufaktur.de
+[7]: https://addons.phpmanufaktur.de/de/name/dropletsextension.php
+[8]: https://phpmanufaktur.de/support
