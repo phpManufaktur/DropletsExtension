@@ -294,7 +294,8 @@ function droplet_exists($droplet_name, $page_id) {
   // check if the droplet exists in a WYSIWYG section
   $SQL = "SELECT * FROM `".TABLE_PREFIX."mod_wysiwyg` WHERE `page_id`='$page_id' AND ".
     "((`text` LIKE '%[[$droplet_name?%') OR (`text` LIKE '%[[$droplet_name]]%'))";
-  if (null == ($query = $database->query($SQL))) {
+  $query = $database->query($SQL);
+  if ($database->is_error()) {
     trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
     return false;
   }
@@ -303,7 +304,8 @@ function droplet_exists($droplet_name, $page_id) {
 
   // perhaps TOPICs?
   $SQL = sprintf("SHOW TABLE STATUS LIKE '%smod_topics'", TABLE_PREFIX);
-  if (null == ($query = $database->query($SQL))) {
+  $query = $database->query($SQL);
+  if ($database->is_error()) {
     trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
     return false;
   }
@@ -311,7 +313,8 @@ function droplet_exists($droplet_name, $page_id) {
     // TOPICS is installed, so check if there is a TOPIC section at this page
     $SQL = "SELECT `topic_id` FROM `".TABLE_PREFIX."mod_topics` WHERE `page_id`='$page_id' ".
       "AND ((`content_long` LIKE '%[[$droplet_name?%') OR (`content_long` LIKE '%[[$droplet_name]]%'))";
-    if (null == ($query = $database->query($SQL))) {
+    $query = $database->query($SQL);
+    if ($database->is_error()) {
       trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
       return false;
     }
@@ -575,7 +578,8 @@ function getFirstImageFromContent($page_id, $exec_droplets=true) {
   if (defined('TOPIC_ID')) {
     // this is a TOPICS article so get content from the TOPICS
     $SQL = "SELECT `content_long` FROM `".TABLE_PREFIX."mod_topics` WHERE `topic_id`='".TOPIC_ID."'";
-    if (null == ($result = $database->get_one($SQL, MYSQL_ASSOC))) {
+    $result = $database->get_one($SQL, MYSQL_ASSOC);
+    if ($database->is_error()) {
       trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
       return false;
     }
@@ -585,13 +589,15 @@ function getFirstImageFromContent($page_id, $exec_droplets=true) {
   else {
     // this is a regular WYSIWYG article
     $SQL = "SELECT `section_id` FROM `".TABLE_PREFIX."sections` WHERE `page_id`='$page_id' AND `module`='wysiwyg' ORDER BY `position` ASC LIMIT 1";
-    if (null == ($section_id = $database->get_one($SQL, MYSQL_ASSOC))) {
+    $section_id = $database->get_one($SQL, MYSQL_ASSOC);
+    if ($database->is_error()) {
       trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
       return false;
     }
 
     $SQL = "SELECT `content` FROM `".TABLE_PREFIX."mod_wysiwyg` WHERE `section_id`='$section_id'";
-    if (null == ($result = $database->get_one($SQL, MYSQL_ASSOC))) {
+    $result = $database->get_one($SQL, MYSQL_ASSOC);
+    if ($database->is_error()) {
       trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
       return false;
     }
