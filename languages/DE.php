@@ -40,10 +40,10 @@ if ('á' != "\xc3\xa1") {
 }
 
 // Module Description
-$module_description = 'dropletExtension - Integriert Droplets in die WebsiteBaker Suchfunktion';
+$module_description = 'dropletExtension - Erweiterte Funktionen f&uuml;r Droplets';
 // name of the person(s) who translated and edited this language file
 $module_translation_by = 'Ralf Hertsch (phpManufaktur)';
 
-define('drop_ext_modify_prompt', '<div style="border:1px solid #000;padding:15px;color:#000;background-color:#ffffcc;text-align:center;"><p>Für die einwandfreie Funktion des Addon <b>dropletExtension</b> muss wenigstens ein Abschnitt vom Typ <b>dropletExtension</b> existieren - auf welcher Seite sich dieser befindet spielt keinerlei Rolle, es sind darüber hinaus keine weiteren Einstellungen erforderlich.</p></div>');
+define('drop_ext_modify_prompt', '<div style="border:1px solid #ddd;padding:2px;color:#666;background-color:transparent;text-align:center;">Platzhalter für die DropletsExtension Suchfunktion - keine Konfiguration erforderlich.</div>');
 
 ?>
