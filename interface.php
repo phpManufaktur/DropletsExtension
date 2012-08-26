@@ -34,23 +34,38 @@ else {
 /**
  * Ueberprueft ob das angegebene Droplet registriert ist
  *
- * @param STR $droplet_name
- * @param STR $register_type
- * @param INT $page_id - die PAGE_ID fuer die das Droplet registriert ist
- * @return BOOL
+ * @param string $droplet_name
+ * @param string $register_type
+ * @param integer $page_id - die PAGE_ID fuer die das Droplet registriert ist
+ * @return boolean
  */
-function is_registered_droplet($droplet_name, $register_type, $page_id) {
+function is_registered_droplet($droplet_name, $register_type, $page_id, $topic_id=-1) {
   global $database;
 
-  $SQL = "SELECT `drop_page_id` FROM `".TABLE_PREFIX."mod_droplets_extension` WHERE ".
-    "`drop_droplet_name`='$droplet_name' AND `drop_type`='$register_type' AND ".
-    "`drop_page_id`='$page_id'";
-  $check = $database->get_one($SQL, MYSQL_ASSOC);
-  if ($database->is_error()) {
-    trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
-    return false;
+  if (($topic_id > 0) && ($register_type == 'search')) {
+    $SQL = "SELECT `drop_topics_array` FROM `".TABLE_PREFIX."mod_droplets_extension` WHERE ".
+        "`drop_droplet_name`='$droplet_name' AND `drop_type`='$register_type' AND ".
+        "`drop_page_id`='$page_id'";
+    $check = $database->get_one($SQL, MYSQL_ASSOC);
+    if ($database->is_error()) {
+      trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
+      return false;
+    }
+    $arr = explode(',', $check);
+    $result = (in_array($topic_id, $arr));
   }
-  $result = ($check == $page_id) ? true : false;
+  else {
+    // regular check
+    $SQL = "SELECT `drop_page_id` FROM `".TABLE_PREFIX."mod_droplets_extension` WHERE ".
+      "`drop_droplet_name`='$droplet_name' AND `drop_type`='$register_type' AND ".
+      "`drop_page_id`='$page_id'";
+    $check = $database->get_one($SQL, MYSQL_ASSOC);
+    if ($database->is_error()) {
+      trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
+      return false;
+    }
+    $result = ($check == $page_id) ? true : false;
+  }
   if ($result)
     check_droplet_search_section($page_id);
   return $result;
@@ -64,7 +79,8 @@ function is_registered_droplet($droplet_name, $register_type, $page_id) {
  * @return BOOL
  */
 function is_registered_droplet_search($droplet_name, $page_id) {
-  return is_registered_droplet($droplet_name, 'search', $page_id);
+  $topic_id = (defined('TOPIC_ID')) ? TOPIC_ID : -1;
+  return is_registered_droplet($droplet_name, 'search', $page_id, $topic_id);
 } // is_registered_droplet_search()
 
 /**
@@ -103,12 +119,14 @@ function is_registered_droplet_js($droplet_name, $page_id) {
 /**
  * Registriert das angegebene Droplet
  *
- * @param STR $droplet_name - Name des Droplets
- * @param INT $page_id - PAGE_ID der Seite auf der das Droplet verwendet wird
- * @param STR $module_directory - Modul Verzeichnis in dem die Suche die Datei droplet.extension.php findet
- * @return BOOL
+ * @param string $droplet_name the name of the droplet
+ * @param integer $page_id the PAGE_ID where this droplet is in use
+ * @param string $module_directory the directory where the droplets.extension.php file of the module is hosted
+ * @param string $file the name of the CSS or JS file
+ * @param integer $topic_id the ID of the assigned TOPICS article (optional)
+ * @return boolean
  */
-function register_droplet($droplet_name, $page_id, $module_directory, $register_type, $file = '') {
+function register_droplet($droplet_name, $page_id, $module_directory, $register_type, $file = '', $topic_id=-1) {
   global $database;
 
   // check if a droplet search section exists
@@ -120,17 +138,54 @@ function register_droplet($droplet_name, $page_id, $module_directory, $register_
   if (!droplet_exists($droplet_name, $page_id))
     return false;
   // nothing to do if the droplet is already registered
-  if (is_registered_droplet($droplet_name, $register_type, $page_id))
+  if (is_registered_droplet($droplet_name, $register_type, $page_id, $topic_id))
     return true;
   // clear the module directory
   $module_directory = clear_module_directory($module_directory);
+
   // register the droplet
-  $SQL = "INSERT INTO `".TABLE_PREFIX."mod_droplets_extension` (`drop_droplet_name`,".
-    "`drop_page_id`,`drop_module_dir`,`drop_type`,`drop_file`) VALUES ".
-    "('$droplet_name','$page_id','$module_directory','$register_type','$file')";
-  if (!$database->query($SQL)) {
-    trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
-    return false;
+  if (($topic_id > 1) && ($register_type == 'search')) {
+    // this is possible an update - check first
+    $SQL = "SELECT `drop_id`,`drop_topics_array` FROM `".TABLE_PREFIX."mod_droplets_extension` WHERE `drop_type`='search' AND `drop_page_id`='$page_id'";
+    if (null == ($query = $database->query($SQL))) {
+      trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
+      return false;
+    }
+    if ($query->numRows() > 0) {
+      // this is an update!
+      $droplet = $query->fetchRow(MYSQL_ASSOC);
+      $arr = explode(',', $droplet['drop_topics_array']);
+      if (is_array($arr)) {
+        $arr[] = $topic_id;
+        $topics_str = implode(',', $arr);
+      }
+      else
+        $topics_str = $topic_id;
+      $SQL = "UPDATE `".TABLE_PREFIX."mod_droplets_extension` SET `drop_topics_array`='$topics_str' WHERE `drop_id`='{$droplet['drop_id']}'";
+      if (!$database->query($SQL)) {
+        trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
+        return false;
+      }
+    }
+    else {
+      // insert a new record
+      $SQL = "INSERT INTO `".TABLE_PREFIX."mod_droplets_extension` (`drop_droplet_name`,".
+          "`drop_page_id`,`drop_module_dir`,`drop_type`,`drop_file`,`drop_topics_array`) VALUES ".
+          "('$droplet_name','$page_id','$module_directory','$register_type','$file','$topic_id')";
+      if (!$database->query($SQL)) {
+        trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
+        return false;
+      }
+    }
+  }
+  else {
+    $SQL = "INSERT INTO `".TABLE_PREFIX."mod_droplets_extension` (`drop_droplet_name`,".
+      "`drop_page_id`,`drop_module_dir`,`drop_type`,`drop_file`) VALUES ".
+      "('$droplet_name','$page_id','$module_directory','$register_type','$file')";
+    if (!$database->query($SQL)) {
+      trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
+      return false;
+    }
   }
   return true;
 } // register_droplet()
@@ -144,7 +199,8 @@ function register_droplet($droplet_name, $page_id, $module_directory, $register_
  * @return BOOL
  */
 function register_droplet_search($droplet_name, $page_id, $module_directory) {
-  return register_droplet($droplet_name, $page_id, $module_directory, 'search');
+  $topic_id = (defined('TOPIC_ID')) ? TOPIC_ID : -1;
+  return register_droplet($droplet_name, $page_id, $module_directory, 'search', '', $topic_id);
 } // register_droplet_search()
 
 /**
@@ -191,11 +247,37 @@ function register_droplet_js($droplet_name, $page_id, $module_directory, $file) 
  * @param STR $droplet_name
  * @return BOOL
  */
-function unregister_droplet($droplet_name, $register_type, $page_id) {
+function unregister_droplet($droplet_name, $register_type, $page_id, $topic_id=-1) {
   global $database;
 
   // clear Droplet name
   $droplet_name = clear_droplet_name($droplet_name);
+
+  if (($topic_id > 0) && ($register_type == 'search')) {
+    $SQL = "SELECT `drop_id`, `drop_topics_array` FROM `".TABLE_PREFIX."mod_droplets_extension` WHERE ".
+        "`drop_droplet_name`='$droplet_name' AND `drop_type`='$register_type' AND `drop_page_id`='$page_id'";
+    if (null == ($query = $database->query($SQL))) {
+      trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
+      return false;
+    }
+    if ($query->numRows() > 0) {
+      $droplet = $query->fetchRow(MYSQL_ASSOC);
+      $topics_array = explode(',', $droplet['drop_topics_array']);
+      if (count($topics_array) > 1) {
+        // we have more than one entry - remove the topic id and update the record
+        unset($topics_array[array_search($topic_id, $topics_array)]);
+        $topics_str = implode(',', $topics_array);
+        $SQL = "UPDATE `".TABLE_PREFIX."mod_droplets_extension` SET `drop_topics_array`='$topics_str' WHERE `drop_id`='{$droplet['drop_id']}'";
+        if (!$database->query($SQL)) {
+          trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
+          return false;
+        }
+      }
+      // all done - leave
+      return true;
+    }
+  }
+  // delete the record
   $SQL = "DELETE FROM `".TABLE_PREFIX."mod_droplets_extension` WHERE `drop_droplet_name`='$droplet_name' ".
       "AND `drop_type`='$register_type' AND `drop_page_id`='$page_id'";
   if (!$database->query($SQL)) {
@@ -212,7 +294,8 @@ function unregister_droplet($droplet_name, $register_type, $page_id) {
  * @return BOOL
  */
 function unregister_droplet_search($droplet_name, $page_id) {
-  return unregister_droplet($droplet_name, 'search', $page_id);
+  $topic_id = (defined('TOPIC_ID')) ? TOPIC_ID : -1;
+  return unregister_droplet($droplet_name, 'search', $page_id, $topic_id);
 } // unregister_droplet_search()
 
 /**
@@ -302,8 +385,9 @@ function droplet_exists($droplet_name, $page_id) {
     return false;
   }
   if ($query->numRows() > 0) {
+    $add = (defined('TOPIC_ID')) ? " AND `topic_id`='".TOPIC_ID."'" : '';
     // TOPICS is installed, so check if there is a TOPIC section at this page
-    $SQL = "SELECT `topic_id` FROM `".TABLE_PREFIX."mod_topics` WHERE `page_id`='$page_id' ".
+    $SQL = "SELECT `topic_id` FROM `".TABLE_PREFIX."mod_topics` WHERE `page_id`='$page_id'$add ".
       "AND ((`content_long` LIKE '%[[$droplet_name?%') OR (`content_long` LIKE '%[[$droplet_name]]%'))";
     $query = $database->query($SQL);
     if ($database->is_error()) {
@@ -328,13 +412,25 @@ function check_droplet_search_section($page_id = -1) {
   if ($page_id < 1) return false;
 
   // check for a droplets_extension section
-  $SQL = "SELECT * FROM `".TABLE_PREFIX."sections` WHERE `module`='droplets_extension'";
+  //$SQL = "SELECT * FROM `".TABLE_PREFIX."sections` WHERE `module`='droplets_extension'";
+  $SQL = "SELECT `section_id` FROM `".TABLE_PREFIX."sections`, `".TABLE_PREFIX."pages` WHERE `module`='droplets_extension' AND `visibility`='public'";
   if (null == ($query = $database->query($SQL))) {
     trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
     return false;
   }
   if ($query->numRows() > 0)
     return true;
+
+  // we need a published page for including the search section
+  $SQL = "SELECT `visibility` FROM `".TABLE_PREFIX."pages` WHERE `page_id`='$page_id'";
+  $visibility = $database->get_one($SQL, MYSQL_ASSOC);
+  if ($database->is_error()) {
+    trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
+    return false;
+  }
+  if ($visibility != 'public')
+    // this page is not usable for the search section
+    return false;
 
   // get the position of the last section
   $SQL = "SELECT `position` FROM `".TABLE_PREFIX."sections` WHERE `page_id`='$page_id' ORDER BY `position` DESC LIMIT 1";
@@ -525,6 +621,8 @@ function print_page_head($facebook=false, $no_exec_droplets=array()) {
     else {
       // unregister the droplet to prevent overhead
       unregister_droplet($droplet['drop_droplet_name'], $droplet['drop_type'], $page_id);
+      // also unregister droplet search
+      unregister_droplet_search($droplet['drop_droplet_name'], $page_id);
     }
   }
 
