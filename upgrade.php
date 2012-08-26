@@ -39,3 +39,27 @@ if (file_exists(WB_PATH.'/modules/droplets_extension/class.extension.php'))
 
 if (file_exists(WB_PATH.'/modules/droplets_extension/class.pages.php'))
   @unlink(WB_PATH.'/modules/droplets_extension/class.pages.php');
+
+/**
+ * Check if the specified $field in table mod_droplets_extension exists
+ *
+ * @param string $field
+ * @return boolean
+ */
+function fieldExists($field) {
+  global $database;
+  global $admin;
+
+  if (null === ($query = $database->query("DESCRIBE `".TABLE_PREFIX."mod_droplets_extension`")))
+    $admin->print_error($database->get_error());
+  while (false !== ($data = $query->fetchRow(MYSQL_ASSOC)))
+    if ($data['Field'] == $field) return true;
+  return false;
+} // sqlFieldExists()
+
+if (!fieldExists('drop_topics_array')) {
+  // add field drop_topics_array
+  $SQL = "ALTER TABLE `".TABLE_PREFIX."mod_droplets_extension` ADD `drop_topics_array` VARCHAR(255) NOT NULL DEFAULT '' AFTER `drop_file`";
+  if (!$database->query($SQL))
+    $admin->print_error($database->get_error());
+}

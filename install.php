@@ -42,6 +42,7 @@ $SQL = "CREATE TABLE IF NOT EXISTS `".TABLE_PREFIX."mod_droplets_extension` ( ".
     "`drop_module_dir` VARCHAR(255) NOT NULL DEFAULT '', ".
     "`drop_type` ENUM('css','search','header','javascript','undefined') NOT NULL DEFAULT 'undefined', ".
     "`drop_file` VARCHAR(255) NOT NULL DEFAULT '', ".
+    "`drop_topics_array` VARCHAR(255) NOT NULL DEFAULT '', ".
     "`drop_timestamp` TIMESTAMP, ".
     "PRIMARY KEY (`drop_id`), ".
     "KEY (`drop_droplet_name`, `drop_page_id`) ".
