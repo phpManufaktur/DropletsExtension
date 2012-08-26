@@ -39,10 +39,13 @@ else {
  * @param integer $page_id - die PAGE_ID fuer die das Droplet registriert ist
  * @return boolean
  */
-function is_registered_droplet($droplet_name, $register_type, $page_id, $topic_id=-1) {
+function is_registered_droplet($droplet_name, $register_type, $page_id) {
   global $database;
 
-  if (($topic_id > 0) && ($register_type == 'search')) {
+  // is it a TOPICS article?
+  $topic_id = (defined('TOPIC_ID')) ? TOPIC_ID : -1;
+
+  if (($topic_id > 0)) {
     $SQL = "SELECT `drop_topics_array` FROM `".TABLE_PREFIX."mod_droplets_extension` WHERE ".
         "`drop_droplet_name`='$droplet_name' AND `drop_type`='$register_type' AND ".
         "`drop_page_id`='$page_id'";
@@ -79,8 +82,7 @@ function is_registered_droplet($droplet_name, $register_type, $page_id, $topic_i
  * @return BOOL
  */
 function is_registered_droplet_search($droplet_name, $page_id) {
-  $topic_id = (defined('TOPIC_ID')) ? TOPIC_ID : -1;
-  return is_registered_droplet($droplet_name, 'search', $page_id, $topic_id);
+  return is_registered_droplet($droplet_name, 'search', $page_id);
 } // is_registered_droplet_search()
 
 /**
@@ -126,8 +128,11 @@ function is_registered_droplet_js($droplet_name, $page_id) {
  * @param integer $topic_id the ID of the assigned TOPICS article (optional)
  * @return boolean
  */
-function register_droplet($droplet_name, $page_id, $module_directory, $register_type, $file = '', $topic_id=-1) {
+function register_droplet($droplet_name, $page_id, $module_directory, $register_type, $file = '') {
   global $database;
+
+  // is it a TOPICS article?
+  $topic_id = (defined('TOPIC_ID')) ? TOPIC_ID : -1;
 
   // check if a droplet search section exists
   if ($register_type == 'search')
@@ -144,9 +149,9 @@ function register_droplet($droplet_name, $page_id, $module_directory, $register_
   $module_directory = clear_module_directory($module_directory);
 
   // register the droplet
-  if (($topic_id > 1) && ($register_type == 'search')) {
+  if (($topic_id > 1)) {
     // this is possible an update - check first
-    $SQL = "SELECT `drop_id`,`drop_topics_array` FROM `".TABLE_PREFIX."mod_droplets_extension` WHERE `drop_type`='search' AND `drop_page_id`='$page_id'";
+    $SQL = "SELECT `drop_id`,`drop_topics_array` FROM `".TABLE_PREFIX."mod_droplets_extension` WHERE `drop_type`='$register_type' AND `drop_page_id`='$page_id'";
     if (null == ($query = $database->query($SQL))) {
       trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
       return false;
@@ -199,8 +204,7 @@ function register_droplet($droplet_name, $page_id, $module_directory, $register_
  * @return BOOL
  */
 function register_droplet_search($droplet_name, $page_id, $module_directory) {
-  $topic_id = (defined('TOPIC_ID')) ? TOPIC_ID : -1;
-  return register_droplet($droplet_name, $page_id, $module_directory, 'search', '', $topic_id);
+  return register_droplet($droplet_name, $page_id, $module_directory, 'search');
 } // register_droplet_search()
 
 /**
@@ -247,13 +251,16 @@ function register_droplet_js($droplet_name, $page_id, $module_directory, $file) 
  * @param STR $droplet_name
  * @return BOOL
  */
-function unregister_droplet($droplet_name, $register_type, $page_id, $topic_id=-1) {
+function unregister_droplet($droplet_name, $register_type, $page_id) {
   global $database;
 
   // clear Droplet name
   $droplet_name = clear_droplet_name($droplet_name);
 
-  if (($topic_id > 0) && ($register_type == 'search')) {
+  // is it a TOPICS article?
+  $topic_id = (defined('TOPIC_ID')) ? TOPIC_ID : -1;
+
+  if (($topic_id > 0)) {
     $SQL = "SELECT `drop_id`, `drop_topics_array` FROM `".TABLE_PREFIX."mod_droplets_extension` WHERE ".
         "`drop_droplet_name`='$droplet_name' AND `drop_type`='$register_type' AND `drop_page_id`='$page_id'";
     if (null == ($query = $database->query($SQL))) {
@@ -294,8 +301,7 @@ function unregister_droplet($droplet_name, $register_type, $page_id, $topic_id=-
  * @return BOOL
  */
 function unregister_droplet_search($droplet_name, $page_id) {
-  $topic_id = (defined('TOPIC_ID')) ? TOPIC_ID : -1;
-  return unregister_droplet($droplet_name, 'search', $page_id, $topic_id);
+  return unregister_droplet($droplet_name, 'search', $page_id);
 } // unregister_droplet_search()
 
 /**
@@ -365,6 +371,7 @@ function clear_module_directory($module_directory) {
  */
 function droplet_exists($droplet_name, $page_id) {
   global $database;
+
   $droplet_name = clear_droplet_name($droplet_name);
   // check if the droplet exists in a WYSIWYG section
   $SQL = "SELECT * FROM `".TABLE_PREFIX."mod_wysiwyg` WHERE `page_id`='$page_id' AND ".
@@ -490,7 +497,7 @@ function getURLbyPageID($page_id) {
   return WB_URL.PAGES_DIRECTORY.$link.PAGE_EXTENSION;
 }
 
-function print_page_head($facebook=false, $no_exec_droplets=array()) {
+function print_page_head($open_graph=false, $no_exec_droplets=array()) {
   global $database;
   global $wb;
   global $page_id;
@@ -592,8 +599,19 @@ function print_page_head($facebook=false, $no_exec_droplets=array()) {
   }
 
   while (false !== ($droplet = $query->fetchRow(MYSQL_ASSOC))) {
+    // go only ahead if the droplet exists
     if (droplet_exists($droplet['drop_droplet_name'], $droplet['drop_page_id'])) {
-      // das Droplet existiert
+      // check if this droplet is loaded by a TOPICS article
+      $topics_array = explode(',',$droplet['drop_topics_array']);
+      if (defined('TOPIC_ID')) {
+        if (!in_array(TOPIC_ID, $topics_array))
+          // the droplet is not registered for this TOPIC_ID so continue
+          continue;
+      }
+      elseif (!empty($droplet['drop_topics_array']) && !defined('TOPIC_ID')) {
+        // the droplet is not registered for this TOPIC_ID so continue
+        continue;
+      }
       $checked = false;
       // first check if there exists a custom.* file ...
       $file = WB_PATH.'/modules/'.$droplet['drop_module_dir'].'/custom.'.$droplet['drop_file'];
@@ -632,7 +650,7 @@ function print_page_head($facebook=false, $no_exec_droplets=array()) {
       $exec_droplets = false;
   }
 
-  if ($facebook && (false !== ($image = getFirstImageFromContent($page_id, $exec_droplets)))) {
+  if ($open_graph && (false !== ($image = getFirstImageFromContent($page_id, $exec_droplets)))) {
     $url = getURLbyPageID($page_id);
 
 $head = <<<EOD
