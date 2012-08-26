@@ -1,10 +1,21 @@
 ### DropletsExtension
 
-0.22 - NOT PUBLISHED YET
+0.22 - 2012-08-26
 
-* print_page_head() got an additional parameter $no_exec_droplets as array to 
-  enable to specify pages where the droplets should not be executed by the 
-  function.
+* DropletsExtension no longer use the classes from class.extension.php and 
+  class.pages.php
+* DropletsExtension no longer need the kitTools
+* DropletsExtension no longer need dbConnect_LE
+* precheck.php is reduced to a minimum - DropletsExtension no longer depends 
+  from other addons
+* changed and improved search routine for the registered droplets
+* bugfix: print_page_head() has not proper loaded CSS and JS files
+* the license for DropletsExtension has changed to the MIT License (MIT)
+* Changed the information string for the auto-included search section
+* Extended support for TOPICS - CSS and JS files for droplets will only loaded
+  if the registered article will be shown
+* Extended and improved Open Graph support. See the Documentation for more 
+  informations and hints  
 
 0.21 - 2012-07-31
 
