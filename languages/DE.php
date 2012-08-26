@@ -41,6 +41,6 @@ $module_description = 'dropletExtension - Erweiterte Funktionen f&uuml;r Droplet
 // name of the person(s) who translated and edited this language file
 $module_translation_by = 'Ralf Hertsch (phpManufaktur)';
 
-define('drop_ext_modify_prompt', '<div style="border:1px solid #ddd;padding:2px;color:#666;background-color:transparent;text-align:center;">Platzhalter für die DropletsExtension Suchfunktion - keine Konfiguration erforderlich.</div>');
+define('drop_ext_modify_prompt', '<div style="border:1px solid #ddd;padding:2px;color:#666;background-color:#fff;text-align:center;">Platzhalter für die <a href="https://addons.phpmanufaktur.de/de/name/dropletsextension.php" target="_blank">DropletsExtension</a> Suchfunktion - keine Konfiguration erforderlich - &copy; 2011-2012 by <a href="https://addons.phpmanufaktur.de" target="_blank">phpManufaktur</a></div>');
 
 ?>
