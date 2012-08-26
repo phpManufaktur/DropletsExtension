@@ -497,14 +497,14 @@ function getURLbyPageID($page_id) {
   return WB_URL.PAGES_DIRECTORY.$link.PAGE_EXTENSION;
 }
 
-function print_page_head($open_graph=false, $no_exec_droplets=array()) {
+function print_page_head($open_graph=false) {
   global $database;
   global $wb;
   global $page_id;
 
-  $title = $wb->page_title;
-  $description = $wb->page_description;
-  $keywords = $wb->page_keywords;
+  $title = trim($wb->page_title);
+  $description = trim($wb->page_description);
+  $keywords = trim($wb->page_keywords);
 
   if (defined('TOPIC_ID')) {
     // Es handelt sich um eine TOPICS Seite
@@ -628,11 +628,11 @@ function print_page_head($open_graph=false, $no_exec_droplets=array()) {
         $file = str_replace(WB_PATH, WB_URL, $file);
         if ($droplet['drop_type'] == 'css') {
           // CSS
-          $load_css .= sprintf("\n".'  <link rel="stylesheet" type="text/css" href="%s" media="screen" />', $file);
+          $load_css .= sprintf('  <link rel="stylesheet" type="text/css" href="%s" media="screen" />', $file);
         }
         else {
           // JavaScript
-          $load_js .= sprintf("\n".'  <script type="text/javascript" src="%s"></script>', $file);
+          $load_js .= sprintf('  <script type="text/javascript" src="%s"></script>', $file);
         }
       }
     }
@@ -644,14 +644,81 @@ function print_page_head($open_graph=false, $no_exec_droplets=array()) {
     }
   }
 
+  // set the default values for the Open Graph support
+  $image = '';
+  $site_name = WEBSITE_TITLE;
+  $og_type = 'article';
   $exec_droplets = true;
-  foreach ($no_exec_droplets as $id) {
-    if (($id == $page_id) || ($id == -1))
+
+  // check if a configuration file exists
+  if (file_exists(WB_PATH.'/modules/droplets_extension/config.json'))
+    $config = json_decode(file_get_contents(WB_PATH.'/modules/droplets_extension/config.json'), true);
+
+  if (isset($config['og:website_title']))
+    $site_name = $config['og:website_title'];
+
+  if (!empty($keywords)) {
+    // process the keywords
+    $ka = explode(',', $keywords);
+    $keyword_array = array();
+    foreach ($ka as $keyword) {
+      $keyword = trim($keyword);
+      if (false !== strpos($keyword, '=')) {
+        list($command, $value) = explode('=', $keyword);
+        $command = trim(strtolower($command));
+        $value = trim($value);
+        switch ($command) {
+          case 'og:image':
+             $image = $value;
+             continue;
+          case 'og:type':
+            $og_type = strtolower($value);
+            continue;
+          case 'og:droplet':
+            if (strtolower($value) == 'false')
+              $exec_droplets = false;
+            continue;
+          case 'og:exec':
+            if (strtolower($value) == 'false')
+              $open_graph = false;
+            continue;
+        }
+      }
+      $keyword_array[] = $keyword;
+    }
+    // at least rewrite the keywords
+    $keywords = implode(',', $keyword_array);
+  }
+
+  if (isset($config['og:droplet'])) {
+    if (trim(strtolower($config['og:droplets'])) == 'false')
       $exec_droplets = false;
   }
 
-  if ($open_graph && (false !== ($image = getFirstImageFromContent($page_id, $exec_droplets)))) {
+  if (empty($image)) {
+    // try to get the first image from the content
+    if (false !== ($test = getFirstImageFromContent($page_id, $exec_droplets)))
+      $image = $test;
+  }
+
+  if (empty($image)) {
+    // if no image is available look if a image is defined in config.json
+    if (isset($config['og:image']))
+      $image = $config['og:image'];
+  }
+
+  if ($open_graph && !empty($image)) {
     $url = getURLbyPageID($page_id);
+    if (substr($image, 0, strlen(WB_URL)) == WB_URL) {
+      list($width,$height) = getimagesize(WB_PATH.substr($image, strlen(WB_URL)));
+      $image_dimensions = <<<EOD
+  <meta property="og:image:width" content="$width" />
+  <meta property="og:image:height" content="$height" />
+EOD;
+    }
+    else
+      $image_dimensions = '';
+
 
 $head = <<<EOD
   <!-- dropletsExtension -->
@@ -659,16 +726,19 @@ $head = <<<EOD
   <meta name="keywords" content="$keywords" />
   <title>$title</title>
   <meta property="og:image" content="$image" />
-  <meta property="og:type" content="article" />
+  $image_dimensions
+  <meta property="og:type" content="$og_type" />
   <meta property="og:title" content="$title" />
   <meta property="og:description" content="$description" />
-  <meta property="og:url" content="$url" />$load_css$load_js
+  <meta property="og:url" content="$url" />
+  <meta property="og:site_name" content="$site_name">
+  <link rel="image_src" href="$image" />
+  $load_css
+  $load_js
   <!-- /dropletsExtension -->
 EOD;
-
   }
   else {
-
 $head = <<<EOD
   <!-- dropletsExtension -->
   <meta name="description" content="$description" />
@@ -676,9 +746,7 @@ $head = <<<EOD
   <title>$title</title>$load_css$load_js
   <!-- /dropletsExtension -->
 EOD;
-
   }
-
   echo $head;
 } // print_page_head()
 
