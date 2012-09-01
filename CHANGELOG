@@ -1,5 +1,9 @@
 ### DropletsExtension
 
+0.23 - NOT PUBLISHED YET, JUST IN PROGRESS
+
+* fixed an invalid Query in function register_droplet()
+
 0.22 - 2012-08-26
 
 * DropletsExtension no longer use the classes from class.extension.php and 

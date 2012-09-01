@@ -151,7 +151,7 @@ function register_droplet($droplet_name, $page_id, $module_directory, $register_
   // register the droplet
   if (($topic_id > 1)) {
     // this is possible an update - check first
-    $SQL = "SELECT `drop_id`,`drop_topics_array` FROM `".TABLE_PREFIX."mod_droplets_extension` WHERE `drop_type`='$register_type' AND `drop_page_id`='$page_id'";
+    $SQL = "SELECT `drop_id`,`drop_topics_array` FROM `".TABLE_PREFIX."mod_droplets_extension` WHERE `drop_type`='$register_type' AND `drop_page_id`='$page_id' AND `drop_droplet_name`='$droplet_name'";
     if (null == ($query = $database->query($SQL))) {
       trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
       return false;
