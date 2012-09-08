@@ -797,8 +797,13 @@ function getFirstImageFromContent($page_id, $exec_droplets=true) {
       // we must process the droplets to get the real output content
       ob_start();
         include_once(WB_PATH .'/modules/droplets/droplets.php');
-        if (function_exists('evalDroplets'))
-          $content = evalDroplets($content);
+        if (function_exists('evalDroplets')) {
+          try {
+            $content = evalDroplets($content);
+          } catch (Exception $e) {
+            trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $e->getMessage()), E_USER_ERROR);
+          }
+        }
       ob_end_clean();
     }
     if (preg_match('/<img[^>]*>/', $content, $matches)) {

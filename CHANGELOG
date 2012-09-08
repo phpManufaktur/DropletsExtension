@@ -3,6 +3,7 @@
 0.23 - NOT PUBLISHED YET, JUST IN PROGRESS
 
 * fixed an invalid Query in function register_droplet()
+* fixed a problem getting the first image from a droplet
 
 0.22 - 2012-08-26
 
