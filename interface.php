@@ -707,18 +707,21 @@ function print_page_head($open_graph=false) {
       $image = $config['og:image'];
   }
 
+  if (!empty($image)) {
+    $ext = pathinfo(WB_PATH.substr($image, strlen(WB_URL)), PATHINFO_EXTENSION);
+    if (!in_array(strtolower($ext), array('png','gif','jpg','jpeg')))
+      $image = '';
+  }
+
   if ($open_graph && !empty($image)) {
     $url = getURLbyPageID($page_id);
+    $image_dimensions = '';
     if (substr($image, 0, strlen(WB_URL)) == WB_URL) {
       list($width,$height) = getimagesize(WB_PATH.substr($image, strlen(WB_URL)));
-      $image_dimensions = <<<EOD
+$image_dimensions = <<<EOD
   <meta property="og:image:width" content="$width" />
   <meta property="og:image:height" content="$height" />
 EOD;
-    }
-    else
-      $image_dimensions = '';
-
 
 $head = <<<EOD
   <!-- dropletsExtension -->
@@ -737,6 +740,23 @@ $head = <<<EOD
   $load_js
   <!-- /dropletsExtension -->
 EOD;
+    }
+    else {
+$head = <<<EOD
+  <!-- dropletsExtension -->
+  <meta name="description" content="$description" />
+  <meta name="keywords" content="$keywords" />
+  <title>$title</title>
+  <meta property="og:type" content="$og_type" />
+  <meta property="og:title" content="$title" />
+  <meta property="og:description" content="$description" />
+  <meta property="og:url" content="$url" />
+  <meta property="og:site_name" content="$site_name">
+  $load_css
+  $load_js
+  <!-- /dropletsExtension -->
+EOD;
+    }
   }
   else {
 $head = <<<EOD
