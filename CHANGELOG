@@ -4,6 +4,7 @@
 
 * fixed an invalid Query in function register_droplet()
 * fixed a problem getting the first image from a droplet
+* corrected the closing tag for og:site_name
 
 0.22 - 2012-08-26
 
