@@ -734,7 +734,7 @@ $head = <<<EOD
   <meta property="og:title" content="$title" />
   <meta property="og:description" content="$description" />
   <meta property="og:url" content="$url" />
-  <meta property="og:site_name" content="$site_name">
+  <meta property="og:site_name" content="$site_name" />
   <link rel="image_src" href="$image" />
   $load_css
   $load_js
