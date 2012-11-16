@@ -690,7 +690,7 @@ function print_page_head($open_graph=false) {
     $keywords = implode(',', $keyword_array);
   }
 
-  if (isset($config['og:droplet'])) {
+  if (isset($config['og:droplets'])) {
     if (trim(strtolower($config['og:droplets'])) == 'false')
       $exec_droplets = false;
   }
@@ -815,6 +815,7 @@ function getFirstImageFromContent($page_id, $exec_droplets=true) {
     // scan content for images
     if ($exec_droplets && file_exists(WB_PATH .'/modules/droplets/droplets.php')) {
       // we must process the droplets to get the real output content
+      $_SESSION['DROPLET_EXECUTED_BY_DROPLETS_EXTENSION'] = true;
       ob_start();
         include_once(WB_PATH .'/modules/droplets/droplets.php');
         if (function_exists('evalDroplets')) {
@@ -825,6 +826,7 @@ function getFirstImageFromContent($page_id, $exec_droplets=true) {
           }
         }
       ob_end_clean();
+      unset($_SESSION['DROPLET_EXECUTED_BY_DROPLETS_EXTENSION']);
     }
     if (preg_match('/<img[^>]*>/', $content, $matches)) {
       preg_match_all('/([a-zA-Z]*[a-zA-Z])\s{0,3}[=]\s{0,3}("[^"\r\n]*)"/', $matches[0], $attr);
