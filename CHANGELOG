@@ -1,5 +1,9 @@
 ### DropletsExtension
 
+0.25 - NOT PUBLISHED
+
+* added Facebook OpenGraph support for the news module
+
 0.24 - 2012-11-16
 
 * fixed invalid check for parameter og:droplets in config.json

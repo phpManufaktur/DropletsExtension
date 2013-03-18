@@ -488,6 +488,17 @@ function getURLbyPageID($page_id) {
     return WB_URL . $topics_directory . $link . PAGE_EXTENSION;
   }
 
+  if (defined('POST_ID')) {
+      // this is a NEWS page
+      $SQL = "SELECT `link` FROM `".TABLE_PREFIX."mod_news_posts` WHERE `post_id`='".POST_ID."'";
+      $link = $database->get_one($SQL);
+      if ($database->is_error()) {
+          trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
+          return false;
+      }
+      return WB_URL.PAGES_DIRECTORY.$link.PAGE_EXTENSION;
+  }
+
   $SQL = "SELECT `link` FROM `".TABLE_PREFIX."pages` WHERE `page_id`='$page_id'";
   $link = $database->get_one($SQL, MYSQL_ASSOC);
   if ($database->is_error()) {
@@ -792,6 +803,17 @@ function getFirstImageFromContent($page_id, $exec_droplets=true) {
     }
     if (is_string($result))
       $content = unsanitizeText($result);
+  }
+  elseif (defined('POST_ID')) {
+      // this is a NEWS article so get the content from the NEWS
+      $SQL = "SELECT `content_long` FROM `".TABLE_PREFIX."mod_news_posts` WHERE `post_id`='".POST_ID."'";
+      $result = $database->get_one($SQL, MYSQL_ASSOC);
+      if ($database->is_error()) {
+          trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
+          return false;
+      }
+      if (is_string($result))
+          $content = unsanitizeText($result);
   }
   else {
     // this is a regular WYSIWYG article
