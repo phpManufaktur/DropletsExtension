@@ -1,5 +1,9 @@
 ### DropletsExtension
 
+0.26 - 2013-09-30
+
+* fixed a problem detecting NEWS articles and getting the real URL
+
 0.25 - 2013-03-20
 
 * added Facebook OpenGraph support for the news module
