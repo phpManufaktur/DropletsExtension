@@ -34,7 +34,7 @@ else {
 $module_directory = 'droplets_extension';
 $module_name = 'dropletsExtension';
 $module_function = 'page';
-$module_version = '0.26';
+$module_version = '0.27';
 $module_status = 'Stable';
 $module_platform = '2.8';
 $module_author = 'Ralf Hertsch, Berlin (Germany)';

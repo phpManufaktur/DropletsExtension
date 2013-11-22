@@ -1,5 +1,12 @@
 ### DropletsExtension
 
+0.27 - 2013-11-22
+
+* fixed problems with the OpenGraph support for NEWS
+* workaround for a missing response of LEPTON 1.2.2 at processing droplets
+* extended precheck.php to prevent a installation at BlackCat CMS because the
+  DropletsExtension are integrated in BlackCat CMS Core.
+
 0.26 - 2013-09-30
 
 * fixed a problem detecting NEWS articles and getting the real URL

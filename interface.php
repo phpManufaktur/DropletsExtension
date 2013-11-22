@@ -514,6 +514,7 @@ function print_page_head($open_graph=false) {
   global $database;
   global $wb;
   global $page_id;
+  global $post_id;
 
   $title = trim($wb->page_title);
   $description = trim($wb->page_description);
@@ -541,9 +542,10 @@ function print_page_head($open_graph=false) {
       return false;
     }
   }
-  elseif (defined('POST_ID')) {
+  elseif (defined('POST_ID') || !is_null($post_id)) {
     // Es handelt sich um eine NEWS Seite
-    $SQL = sprintf("SELECT title, content_short FROM %smod_news_posts WHERE post_id='%d'", TABLE_PREFIX, POST_ID);
+      $id = defined('POST_ID') ? POST_ID : $post_id;
+    $SQL = sprintf("SELECT title, content_short FROM %smod_news_posts WHERE post_id='%d'", TABLE_PREFIX, $id);
     if (false !== ($news = $database->query($SQL))) {
       if (false !== ($new = $news->fetchRow(MYSQL_ASSOC))) {
         if (isset($new['title']) && !empty($new['title']))
@@ -792,6 +794,7 @@ EOD;
  */
 function getFirstImageFromContent($page_id, $exec_droplets=true) {
   global $database;
+  global $post_id;
 
   $img = array();
   $content = '';
@@ -806,9 +809,10 @@ function getFirstImageFromContent($page_id, $exec_droplets=true) {
     if (is_string($result))
       $content = unsanitizeText($result);
   }
-  elseif (defined('POST_ID')) {
+  elseif (!is_null($post_id) || defined('POST_ID')) {
       // this is a NEWS article so get the content from the NEWS
-      $SQL = "SELECT `content_long` FROM `".TABLE_PREFIX."mod_news_posts` WHERE `post_id`='".POST_ID."'";
+      $id = (defined('POST_ID')) ? POST_ID : $post_id;
+      $SQL = "SELECT `content_long` FROM `".TABLE_PREFIX."mod_news_posts` WHERE `post_id`='$id'";
       $result = $database->get_one($SQL, MYSQL_ASSOC);
       if ($database->is_error()) {
           trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $database->get_error()), E_USER_ERROR);
@@ -844,7 +848,7 @@ function getFirstImageFromContent($page_id, $exec_droplets=true) {
         include_once(WB_PATH .'/modules/droplets/droplets.php');
         if (function_exists('evalDroplets')) {
           try {
-            $content = evalDroplets($content);
+            evalDroplets($content);
           } catch (Exception $e) {
             trigger_error(sprintf('[%s - %s] %s', __FUNCTION__, __LINE__, $e->getMessage()), E_USER_ERROR);
           }

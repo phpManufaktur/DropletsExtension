@@ -33,7 +33,16 @@ else {
 
 // Checking Requirements
 
-$PRECHECK['PHP_VERSION'] = array('VERSION' => '5.2.0', 'OPERATOR' => '>=');
-$PRECHECK['WB_ADDONS'] = array(
-    'droplets' => array('VERSION' => '1.0', 'OPERATOR' => '>=')
+if (defined('CAT_VERSION')) {
+    $PRECHECK['CUSTOM_CHECKS']['The DropletsExtension are integrated within BlackCat CMS and no longer needed as external Add-on!'] = array(
+        'REQUIRED' => 'OK',
+        'ACTUAL' => 'PROBLEM',
+        'STATUS' => false
     );
+}
+else {
+    $PRECHECK['PHP_VERSION'] = array('VERSION' => '5.2.0', 'OPERATOR' => '>=');
+    $PRECHECK['WB_ADDONS'] = array(
+        'droplets' => array('VERSION' => '1.0', 'OPERATOR' => '>=')
+        );
+}
